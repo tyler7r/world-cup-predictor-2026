@@ -9,7 +9,7 @@ export async function GET() {
     const response = await axios.get(
       `https://${process.env.FOOTBALL_API_HOST}/standings`,
       {
-        params: { league: "1", season: "2026" },
+        params: { league: "1", season: "2022" },
         headers: { "x-apisports-key": process.env.FOOTBALL_API_KEY },
       },
     );
