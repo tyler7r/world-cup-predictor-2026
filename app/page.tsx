@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { neon } from "@neondatabase/serverless";
-import PredictorPage from "./predictor/page";
+import DashboardPage from "./dashboard/page";
 
 export default async function Dashboard() {
   const authObject = await auth();
@@ -23,7 +23,7 @@ export default async function Dashboard() {
   return (
     <div>
       <h1>Welcome to the Predictor, {user?.firstName}!</h1>
-      <PredictorPage />
+      <DashboardPage />
       {/* Rest of your dashboard */}
     </div>
   );

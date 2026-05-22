@@ -11,7 +11,7 @@ export async function GET() {
       {
         params: {
           league: "1", // FIFA World Cup
-          season: "2026",
+          season: "2022",
         },
         headers: {
           "x-apisports-key": process.env.FOOTBALL_API_KEY,
@@ -20,8 +20,6 @@ export async function GET() {
     );
 
     const teams = response.data.response;
-
-    // console.log(teams[0]);
 
     for (const team of teams) {
       await sql`
