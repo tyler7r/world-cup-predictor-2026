@@ -13,6 +13,7 @@ import { useState } from "react";
 import GroupStageStep from "./GroupStageStep";
 import KnockoutStep2 from "./KnockoutStep2";
 import ThirdPlaceStep from "./ThirdPlaceStep";
+import TieBreakerStep, { TieBreakerData } from "./Tiebreaker";
 import { KnockoutData, Match, StandingPredictions, Team } from "./types"; // <-- ADD 'Team'
 
 const steps = ["Group Stage", "Third Place", "Knockouts", "Tie-Breakers"];
@@ -79,6 +80,11 @@ export default function PredictorPage({
     useState<StandingPredictions[]>(initialStandings);
   const [advancingThirdPlaceIds, setAdvancingThirdPlaceIds] =
     useState<number[]>(initialThirdPlaces);
+  const [tieBreakers, setTieBreakers] = useState<TieBreakerData>({
+    totalGoals: "",
+    totalYellowCards: "",
+    totalRedCards: "",
+  });
 
   // --- NEW: Knockout State ---
   const [knockoutPicks, setKnockoutPicks] = useState<KnockoutData>({
@@ -244,6 +250,13 @@ export default function PredictorPage({
     }
   };
 
+  const handleTieBreakerChange = (
+    field: keyof TieBreakerData,
+    value: number | "",
+  ) => {
+    setTieBreakers((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleNext = async () => {
     // Step 0: Group Stage Validation
     if (activeStep === 0 && !isGroupStageComplete()) {
@@ -289,6 +302,26 @@ export default function PredictorPage({
         return;
       }
     }
+    if (activeStep === 3) {
+      if (
+        tieBreakers.totalGoals === "" ||
+        tieBreakers.totalYellowCards === "" ||
+        tieBreakers.totalRedCards === ""
+      ) {
+        alert("Please enter a prediction for all tiebreaker fields.");
+        return;
+      }
+
+      // Call your final API route here to save everything!
+      await fetch("/api/predictions/tiebreakers", {
+        method: "POST",
+        body: JSON.stringify({
+          goals: tieBreakers.totalGoals,
+          yellowCards: tieBreakers.totalYellowCards,
+          redCards: tieBreakers.totalRedCards,
+        }),
+      });
+    }
 
     setActiveStep((prev) => prev + 1);
   };
@@ -322,13 +355,6 @@ export default function PredictorPage({
         )}
         {/* --- NEW: Knockout Step --- */}
         {activeStep === 2 && (
-          // <KnockoutStep
-          //   allTeams={allTeams}
-          //   groupStandingsPicks={standings}
-          //   advancingThirdPlaceIds={advancingThirdPlaceIds}
-          //   picks={knockoutPicks}
-          //   setPicks={setKnockoutPicks}
-          // />
           <KnockoutStep2
             allTeams={allTeams}
             standings={standings}
@@ -337,6 +363,12 @@ export default function PredictorPage({
             picks={knockoutPicks}
             onChange={setKnockoutPicks}
             onComplete={handleKnockoutComplete}
+          />
+        )}
+        {activeStep === 3 && (
+          <TieBreakerStep
+            data={tieBreakers}
+            onChange={handleTieBreakerChange}
           />
         )}
         {/* Step 3 (Tiebreakers) would go here */}
