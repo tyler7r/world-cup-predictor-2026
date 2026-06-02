@@ -11,7 +11,7 @@ export async function GET() {
       {
         params: {
           league: "1", // FIFA World Cup
-          season: "2022",
+          season: "2026",
         },
         headers: {
           "x-apisports-key": process.env.FOOTBALL_API_KEY,

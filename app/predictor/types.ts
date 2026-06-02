@@ -8,6 +8,8 @@ export interface Match {
   group_name: string; // e.g., "Group A"
   home_flag: string;
   away_flag: string;
+  home_rank: number;
+  away_rank: number;
   home_team_id: number;
   away_team_id: number;
   kickoff_time: string;
@@ -16,6 +18,29 @@ export interface Match {
   points_earned: number | null;
   status: string;
   stage: string;
+  venue: string;
+  home_code: string;
+  away_code: string;
+}
+
+export interface UserType {
+  id: string;
+  predicted_total_goals: number;
+  predicted_yellow_cards: number;
+  predicted_red_cards: number;
+  points_earned: number;
+  display_name: string;
+  email: string;
+  entered_pool: string;
+}
+
+export interface ActualKnockoutTeams {
+  stage: string;
+  status: string;
+  home_team_id: number | null;
+  away_team_id: number | null;
+  winner_team_id: number | null;
+  loser_team_id: number | null;
 }
 
 // types.ts
@@ -38,6 +63,13 @@ export interface Team {
   name_code: string;
   flag_url: string;
   group_name: string;
+  rank: number;
+}
+
+export interface Tiebreakers {
+  predicted_total_goals: number;
+  predicted_yellow_cards: number;
+  predicted_red_cards: number;
 }
 
 export interface GroupStanding {
@@ -59,22 +91,45 @@ export interface StandingPredictions {
   w_id: number;
   w_name: string;
   w_flag: string;
+  w_name_code: string;
+  w_rank: number;
   r_id: number;
   r_name: string;
   r_flag: string;
+  r_name_code: string;
+  r_rank: number;
   t_id: number;
   t_name: string;
   t_flag: string;
+  t_name_code: string;
+  t_rank: number;
+  points_earned: number;
+}
+
+export interface ActualStandingsType {
+  group_name: string;
+  w_id: number;
+  w_name: string;
+  w_flag: string;
+  w_name_code: string;
+  r_id: number;
+  r_name: string;
+  r_flag: string;
+  r_name_code: string;
+  t_id: number;
+  t_name: string;
+  t_flag: string;
+  t_name_code: string;
 }
 
 export interface KnockoutData {
-  r16: number[];
-  qf: number[];
-  sf: number[];
-  final: number[];
-  champion: number | null;
-  runnerUp: number | undefined;
-  thirdPlaceMatch: number[];
+  r16: Team[];
+  qf: Team[];
+  sf: Team[];
+  final: Team[];
+  champion: Team | null;
+  runnerUp: Team | undefined;
+  thirdPlaceMatch: Team[];
 }
 
 export const calculateGroupStandings = (

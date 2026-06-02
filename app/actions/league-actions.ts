@@ -2,55 +2,77 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { neon } from "@neondatabase/serverless";
-import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 
 export async function createLeague(formData: FormData) {
   const authObject = await auth();
   const { userId } = authObject;
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) return { success: false, error: "Unauthorized" };
 
   const name = formData.get("leagueName") as string;
-  const inviteCode = nanoid(6).toUpperCase();
+  const inviteCode = formData.get("leaguePwd") as string;
   const sql = neon(process.env.DATABASE_URL!);
 
-  // 1. Create the league
-  const [newLeague] = await sql`
-    INSERT INTO leagues (name, invite_code, creator_id)
-    VALUES (${name}, ${inviteCode}, ${userId})
-    RETURNING id
-  `;
+  try {
+    // 1. Create the league
+    const [newLeague] = await sql`
+      INSERT INTO leagues (name, invite_code, creator_id)
+      VALUES (${name}, ${inviteCode}, ${userId})
+      RETURNING id
+    `;
 
-  // 2. Add the creator as the first member
-  await sql`
-    INSERT INTO league_members (league_id, user_id)
-    VALUES (${newLeague.id}, ${userId})
-  `;
+    // 2. Add the creator as the first member
+    await sql`
+      INSERT INTO league_members (league_id, user_id)
+      VALUES (${newLeague.id}, ${userId})
+    `;
 
-  revalidatePath("/dashboard"); // Refreshes the dashboard data
-  return { success: true };
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      error: "Failed to create league. Please try again.",
+    };
+  }
 }
 
 export async function joinLeague(formData: FormData) {
   const authObject = await auth();
   const { userId } = authObject;
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) return { success: false, error: "Unauthorized" };
 
   const inviteCode = (formData.get("inviteCode") as string).toUpperCase();
   const sql = neon(process.env.DATABASE_URL!);
 
-  // 1. Find the league by code
-  const leagues =
-    await sql`SELECT id FROM leagues WHERE invite_code = ${inviteCode}`;
-  if (leagues.length === 0) throw new Error("Invalid Invite Code");
+  try {
+    // 1. Find the league by code
+    const leagues =
+      await sql`SELECT id FROM leagues WHERE invite_code = ${inviteCode}`;
 
-  // 2. Insert member (ON CONFLICT DO NOTHING prevents errors if they already joined)
-  await sql`
-    INSERT INTO league_members (league_id, user_id)
-    VALUES (${leagues[0].id}, ${userId})
-    ON CONFLICT (league_id, user_id) DO NOTHING
-  `;
+    // Graceful exit instead of throwing an error
+    if (leagues.length === 0) {
+      return {
+        success: false,
+        error: "Invalid Invite Code. Please check the code and try again.",
+      };
+    }
 
-  revalidatePath("/dashboard");
-  return { success: true };
+    // 2. Insert member
+    await sql`
+      INSERT INTO league_members (league_id, user_id)
+      VALUES (${leagues[0].id}, ${userId})
+      ON CONFLICT (league_id, user_id) DO NOTHING
+    `;
+
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      error: "Failed to join a league with this invite code. Please try again.",
+    };
+  }
 }

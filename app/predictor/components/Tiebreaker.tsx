@@ -31,7 +31,6 @@ export default function TieBreakerStep({
   data,
   onChange,
 }: TieBreakerStepProps) {
-  // Historical data for the table
   const historicalData = [
     { year: 2022, host: "Qatar", games: 64, goals: 172, yellow: 227, red: 4 },
     { year: 2018, host: "Russia", games: 64, goals: 169, yellow: 219, red: 4 },
@@ -48,16 +47,16 @@ export default function TieBreakerStep({
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h5" gutterBottom>
+      {/* <Typography variant="h5" gutterBottom>
         Tournament Tiebreakers
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+      </Typography> */}
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         If multiple users finish with the exact same number of points, we will
         use these tournament-wide totals to break the tie. Closest prediction
         wins!
       </Typography>
 
-      <Alert severity="warning" sx={{ mb: 4 }}>
+      <Alert severity="warning" sx={{ mb: 2 }}>
         <AlertTitle>
           <strong>Format Change Warning</strong>
         </AlertTitle>
@@ -67,13 +66,17 @@ export default function TieBreakerStep({
         accordingly!
       </Alert>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={2}>
         {/* Left Column: Historical Reference Table */}
         <Grid size={{ xs: 12, sm: 6 }}>
-          <Typography variant="h6" gutterBottom sx={{ fontSize: "1rem" }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ fontSize: "1rem", fontWeight: "bold" }}
+          >
             Historical Reference (64-Game Format)
           </Typography>
-          <TableContainer component={Paper} variant="outlined" sx={{ mb: 2 }}>
+          <TableContainer component={Paper} variant="outlined" sx={{ mb: 1 }}>
             <Table size="small" aria-label="historical stats table">
               <TableHead sx={{ backgroundColor: "action.hover" }}>
                 <TableRow>
@@ -112,16 +115,21 @@ export default function TieBreakerStep({
 
         {/* Right Column: User Inputs */}
         <Grid size={{ xs: 12, sm: 6 }}>
-          <Typography variant="h6" gutterBottom sx={{ fontSize: "1rem" }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ fontSize: "1rem", fontWeight: "bold", mb: 1 }}
+          >
             Your 2026 Predictions (104 Games)
           </Typography>
+
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
             <TextField
               label="Total Goals Scored"
               type="number"
               variant="outlined"
               fullWidth
-              value={data.totalGoals}
+              value={data.totalGoals ?? ""}
               onChange={handleInputChange("totalGoals")}
               slotProps={{ htmlInput: { min: 0 } }}
               //   inputProps={{ min: 0 }}
@@ -132,7 +140,7 @@ export default function TieBreakerStep({
               type="number"
               variant="outlined"
               fullWidth
-              value={data.totalYellowCards}
+              value={data.totalYellowCards ?? ""}
               onChange={handleInputChange("totalYellowCards")}
               slotProps={{ htmlInput: { min: 0 } }}
             />
@@ -141,7 +149,7 @@ export default function TieBreakerStep({
               type="number"
               variant="outlined"
               fullWidth
-              value={data.totalRedCards}
+              value={data.totalRedCards ?? ""}
               onChange={handleInputChange("totalRedCards")}
               slotProps={{ htmlInput: { min: 0 } }}
               //   inputProps={{ min: 0 }}

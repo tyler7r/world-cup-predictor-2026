@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Alert,
   Box,
   Button,
   Container,
@@ -8,13 +9,23 @@ import {
   Step,
   StepLabel,
   Stepper,
+  Typography,
 } from "@mui/material";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import GroupStageStep from "./GroupStageStep";
-import KnockoutStep2 from "./KnockoutStep2";
+import { pruneGhostPicks } from "../helpers";
+import {
+  ActualStandingsType,
+  KnockoutData,
+  Match,
+  StandingPredictions,
+  Team,
+  Tiebreakers,
+} from "../types"; // <-- ADD 'Team'
+import GroupStageStep from "./GroupStageComponents/GroupStageStep";
+import KnockoutStep from "./KnockoutStep";
 import ThirdPlaceStep from "./ThirdPlaceStep";
 import TieBreakerStep, { TieBreakerData } from "./Tiebreaker";
-import { KnockoutData, Match, StandingPredictions, Team } from "./types"; // <-- ADD 'Team'
 
 const steps = ["Group Stage", "Third Place", "Knockouts", "Tie-Breakers"];
 
@@ -26,44 +37,9 @@ type PredictorPageProps = {
   allTeams: Team[]; // <-- NEW PROP
   userId: string | null;
   initialKnockouts: KnockoutData;
-};
-
-// Helper function to prune teams that no longer exist in the knockout pool
-export const pruneGhostPicks = (
-  currentPicks: KnockoutData,
-  currentStandings: StandingPredictions[],
-  validThirdPlaceIds: number[],
-): KnockoutData => {
-  // 1. Build a Set of all valid team IDs (The pool of 32)
-  const validPool = new Set<number>();
-
-  currentStandings.forEach((s) => {
-    if (s.w_id) validPool.add(s.w_id);
-    if (s.r_id) validPool.add(s.r_id);
-    if (s.t_id && validThirdPlaceIds.includes(s.t_id)) {
-      validPool.add(s.t_id);
-    }
-  });
-
-  // 2. Helper to filter out any IDs not in the valid pool
-  const filterValid = (arr: number[]) => arr.filter((id) => validPool.has(id));
-
-  // 3. Return the sanitized picks
-  return {
-    r16: filterValid(currentPicks.r16),
-    qf: filterValid(currentPicks.qf),
-    sf: filterValid(currentPicks.sf),
-    final: filterValid(currentPicks.final),
-    thirdPlaceMatch: filterValid(currentPicks.thirdPlaceMatch),
-    champion:
-      currentPicks.champion && validPool.has(currentPicks.champion)
-        ? currentPicks.champion
-        : null,
-    runnerUp:
-      currentPicks.runnerUp && validPool.has(currentPicks.runnerUp)
-        ? currentPicks.runnerUp
-        : undefined,
-  };
+  actualStandings: ActualStandingsType[];
+  initialTiebreakers: Tiebreakers;
+  isLocked: boolean;
 };
 
 export default function PredictorPage({
@@ -73,17 +49,23 @@ export default function PredictorPage({
   userId,
   initialKnockouts,
   initialThirdPlaces,
+  actualStandings,
+  initialTiebreakers,
+  isLocked,
 }: PredictorPageProps) {
+  const router = useRouter();
+
   const [activeStep, setActiveStep] = useState(0);
   const [matches, setMatches] = useState<Match[]>(initialMatches);
+
   const [standings, setStandings] =
     useState<StandingPredictions[]>(initialStandings);
   const [advancingThirdPlaceIds, setAdvancingThirdPlaceIds] =
     useState<number[]>(initialThirdPlaces);
   const [tieBreakers, setTieBreakers] = useState<TieBreakerData>({
-    totalGoals: "",
-    totalYellowCards: "",
-    totalRedCards: "",
+    totalGoals: initialTiebreakers.predicted_total_goals ?? "",
+    totalYellowCards: initialTiebreakers.predicted_yellow_cards ?? "",
+    totalRedCards: initialTiebreakers.predicted_red_cards ?? "",
   });
 
   // --- NEW: Knockout State ---
@@ -96,6 +78,14 @@ export default function PredictorPage({
     runnerUp: initialKnockouts?.runnerUp || undefined,
     thirdPlaceMatch: initialKnockouts?.thirdPlaceMatch || [],
   });
+
+  const poolWinners = standings.map((m) => m.w_id);
+  const poolRunnersup = standings.map((m) => m.r_id);
+  const allR32Teams = [
+    ...poolWinners,
+    ...poolRunnersup,
+    ...advancingThirdPlaceIds,
+  ];
 
   const handleToggleThirdPlace = async (teamId: number) => {
     setAdvancingThirdPlaceIds((prev) =>
@@ -131,41 +121,60 @@ export default function PredictorPage({
     teamName: string,
     teamFlag: string,
   ) => {
-    setStandings((prev) => {
-      const existingIndex = prev.findIndex((s) => s.group_name === groupName);
-      const newStandings = [...prev];
+    // 1. Calculate the next standings array immediately
+    const existingIndex = standings.findIndex(
+      (s) => s.group_name === groupName,
+    );
+    const newStandings = [...standings];
 
-      const current =
-        existingIndex >= 0
-          ? newStandings[existingIndex]
-          : ({ group_name: groupName } as StandingPredictions);
-      const updated = { ...current };
+    const current =
+      existingIndex >= 0
+        ? newStandings[existingIndex]
+        : ({ group_name: groupName } as StandingPredictions);
+    const updated = { ...current };
 
-      if (rank === "winner") {
-        updated.w_id = teamId;
-        updated.w_name = teamName;
-        updated.w_flag = teamFlag;
-      } else if (rank === "runnerUp") {
-        updated.r_id = teamId;
-        updated.r_name = teamName;
-        updated.r_flag = teamFlag;
-      } else if (rank === "third") {
-        updated.t_id = teamId;
-        updated.t_name = teamName;
-        updated.t_flag = teamFlag;
-      }
+    if (rank === "winner") {
+      updated.w_id = teamId;
+      updated.w_name = teamName;
+      updated.w_flag = teamFlag;
+    } else if (rank === "runnerUp") {
+      updated.r_id = teamId;
+      updated.r_name = teamName;
+      updated.r_flag = teamFlag;
+    } else if (rank === "third") {
+      updated.t_id = teamId;
+      updated.t_name = teamName;
+      updated.t_flag = teamFlag;
+    }
 
-      if (existingIndex >= 0) {
-        newStandings[existingIndex] = updated;
-      } else {
-        newStandings.push(updated);
-      }
+    if (existingIndex >= 0) {
+      newStandings[existingIndex] = updated;
+    } else {
+      newStandings.push(updated);
+    }
 
-      const newThirdPlaces = newStandings.map((r) => r.t_id);
-      setAdvancingThirdPlaceIds(newThirdPlaces);
+    // 2. Prune advancing third-place choices
+    // Collect all currently valid 3rd-place IDs across all groups
+    const allowedThirdPlaceIds = newStandings
+      .map((s) => s.t_id)
+      .filter((id): id is number => id !== undefined && id !== null);
 
-      return newStandings;
-    });
+    // If a team was in your wild-card pool but is no longer ranked 3rd in their group, drop them
+    const newAdvancingThirdPlaceIds = advancingThirdPlaceIds.filter((id) =>
+      allowedThirdPlaceIds.includes(id),
+    );
+
+    // 3. Prune subsequent knockout brackets using the updated helper function
+    const newKnockoutPicks = pruneGhostPicks(
+      knockoutPicks,
+      newStandings,
+      newAdvancingThirdPlaceIds,
+    );
+
+    // 4. Batch updates cleanly to prevent state desyncs
+    setStandings(newStandings);
+    setAdvancingThirdPlaceIds(newAdvancingThirdPlaceIds);
+    setKnockoutPicks(newKnockoutPicks);
   };
 
   const isGroupStageComplete = () => {
@@ -178,11 +187,12 @@ export default function PredictorPage({
       "F",
       "G",
       "H",
-      // "I",
-      // "J",
-      // "K",
-      // "L",
+      "I",
+      "J",
+      "K",
+      "L",
     ];
+
     return groupLetters.every((letter) => {
       const groupName = `${letter}`;
       const groupMatches = matches.filter(
@@ -192,7 +202,11 @@ export default function PredictorPage({
 
       const matchesDone =
         groupMatches.length > 0 &&
-        groupMatches.every((m) => m.home_goals_predicted !== null);
+        groupMatches.every(
+          (m) =>
+            typeof m.home_goals_predicted === "number" &&
+            typeof m.away_goals_predicted === "number",
+        );
       const picksDone = !!(
         groupStanding?.w_id &&
         groupStanding?.r_id &&
@@ -220,6 +234,7 @@ export default function PredictorPage({
         body: JSON.stringify({
           userId: userId, // Pass your currentUser.id here
           thirdPlaceIds: advancingThirdPlaceIds, // Your state array of 8 IDs
+          r32Picks: allR32Teams,
         }),
       });
 
@@ -236,16 +251,30 @@ export default function PredictorPage({
     }
   };
 
-  const handleKnockoutComplete = async () => {
+  const handleKnockoutComplete = async (moveToTiebreakers: boolean) => {
+    const knockoutpickIds = {
+      r16: knockoutPicks.r16.map((p) => p.id) || [],
+      qf: knockoutPicks.qf.map((p) => p.id) || [],
+      sf: knockoutPicks.sf.map((p) => p.id) || [],
+      final: knockoutPicks.final.map((p) => p.id) || [],
+      champion: knockoutPicks.champion?.id || null,
+      runnerUp: knockoutPicks.runnerUp?.id || undefined,
+      thirdPlaceMatch: knockoutPicks.thirdPlaceMatch.map((p) => p.id) || [],
+    };
+
     const success = await fetch("/api/predictions/save-knockouts", {
       method: "POST",
       body: JSON.stringify({
         userId: userId,
-        picks: knockoutPicks,
+        picks: knockoutpickIds,
       }),
     });
 
-    if (success.ok) {
+    if (success.ok && !moveToTiebreakers) {
+      return "Advance";
+    }
+
+    if (success.ok && moveToTiebreakers) {
       setActiveStep((prev) => prev + 1); // Move to Tie-breakers
     }
   };
@@ -257,11 +286,13 @@ export default function PredictorPage({
     setTieBreakers((prev) => ({ ...prev, [field]: value }));
   };
 
+  const isGroupStageCompleted = isGroupStageComplete();
+
   const handleNext = async () => {
     // Step 0: Group Stage Validation
-    if (activeStep === 0 && !isGroupStageComplete()) {
+    if (activeStep === 0 && !isGroupStageCompleted) {
       alert(
-        "Please complete all groups and resolve any duplicate picks before moving on.",
+        `Please complete all groups and resolve any duplicate picks before moving on.`,
       );
       return;
     }
@@ -290,13 +321,13 @@ export default function PredictorPage({
     // --- NEW: Step 2 Knockout Validation ---
     if (activeStep === 2) {
       if (
-        knockoutPicks.r16.length !== 16 ||
-        knockoutPicks.qf.length !== 8 ||
-        knockoutPicks.sf.length !== 4 ||
-        knockoutPicks.final.length !== 2 ||
-        knockoutPicks.thirdPlaceMatch.length !== 2 ||
-        knockoutPicks.champion === null ||
-        knockoutPicks.runnerUp === undefined
+        knockoutPicks.r16.map((p) => p.id).length !== 16 ||
+        knockoutPicks.qf.map((p) => p.id).length !== 8 ||
+        knockoutPicks.sf.map((p) => p.id).length !== 4 ||
+        knockoutPicks.final.map((p) => p.id).length !== 2 ||
+        knockoutPicks.thirdPlaceMatch.map((p) => p.id).length !== 2 ||
+        knockoutPicks.champion?.id === null ||
+        knockoutPicks.runnerUp?.id === undefined
       ) {
         alert("Please fill out all knockout picks before advancing!");
         return;
@@ -313,7 +344,7 @@ export default function PredictorPage({
       }
 
       // Call your final API route here to save everything!
-      await fetch("/api/predictions/tiebreakers", {
+      const success = await fetch("/api/predictions/tiebreakers", {
         method: "POST",
         body: JSON.stringify({
           goals: tieBreakers.totalGoals,
@@ -321,13 +352,15 @@ export default function PredictorPage({
           redCards: tieBreakers.totalRedCards,
         }),
       });
+      if (success.ok) {
+        void router.push("/pool-entry");
+      }
     }
-
     setActiveStep((prev) => prev + 1);
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
+    <Container sx={{ mt: 2, mb: 8 }}>
       <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
         {steps.map((label) => (
           <Step key={label}>
@@ -336,13 +369,44 @@ export default function PredictorPage({
         ))}
       </Stepper>
 
-      <Paper elevation={0} variant="outlined" sx={{ p: 3, minHeight: "400px" }}>
+      <Box>
+        {activeStep === 0 && (
+          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
+            Group Stage Predictions
+          </Typography>
+        )}
+        {activeStep === 1 && (
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
+              Third Place Predictions
+            </Typography>
+            <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
+              Select the <b>8 third-place teams</b> you believe will advance to
+              the Round of 32. Current selection:{" "}
+              {advancingThirdPlaceIds.length} / 8
+            </Alert>
+          </Box>
+        )}
+        {activeStep === 2 && (
+          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
+            Knockout Stage Predictions
+          </Typography>
+        )}
+        {activeStep === 3 && (
+          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
+            Tiebreaker Predictions
+          </Typography>
+        )}
+      </Box>
+      <Paper elevation={0} sx={{ minHeight: "400px" }}>
         {activeStep === 0 && (
           <GroupStageStep
             matches={matches}
             standings={standings}
             onScoreChange={handleScoreUpdate}
             onStandingChange={handleStandingSave}
+            actualStandings={actualStandings}
+            isLocked={isLocked}
           />
         )}
         {activeStep === 1 && (
@@ -355,7 +419,7 @@ export default function PredictorPage({
         )}
         {/* --- NEW: Knockout Step --- */}
         {activeStep === 2 && (
-          <KnockoutStep2
+          <KnockoutStep
             allTeams={allTeams}
             standings={standings}
             selectedThirdPlaceIds={advancingThirdPlaceIds}
@@ -371,7 +435,6 @@ export default function PredictorPage({
             onChange={handleTieBreakerChange}
           />
         )}
-        {/* Step 3 (Tiebreakers) would go here */}
       </Paper>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>

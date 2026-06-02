@@ -1,124 +1,194 @@
-// app/dashboard/[leagueId]/LeagueClient.tsx
 "use client";
 
-import { ArrowBack, ContentCopy, EditNote } from "@mui/icons-material";
+import {
+  ArrowBackRounded,
+  ContentCopyRounded,
+  PeopleRounded,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
   Container,
   IconButton,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Stack,
   Tooltip,
   Typography,
+  useTheme,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import Link from "next/link";
-import type { LeaderboardEntry, LeagueInfo } from "./page";
+import { useState } from "react";
+import Leaderboard from "../Leaderboard";
+import { LeaderboardEntry } from "../types";
+import type { LeagueInfo } from "./page";
 
 interface LeagueClientProps {
   leagueId: string;
   leagueInfo: LeagueInfo;
   leaderboard: LeaderboardEntry[];
+  memberCount: { members: number };
 }
 
 export default function LeagueClient({
-  leagueId,
   leagueInfo,
   leaderboard,
+  memberCount,
 }: LeagueClientProps) {
-  // Quick helper to copy the invite code
+  const theme = useTheme();
+  const [copied, setCopied] = useState(false);
+
   const handleCopyCode = () => {
     navigator.clipboard.writeText(leagueInfo.invite_code);
-    alert("Invite code copied to clipboard!");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <Container sx={{ mt: 6 }}>
-      {/* Header Section */}
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+    <Container maxWidth="lg" sx={{ pb: 4, mt: 2 }}>
+      {/* Navigation Header */}
+      <Box sx={{ mb: 2 }}>
         <Button
           component={Link}
           href="/dashboard"
-          startIcon={<ArrowBack />}
-          sx={{ mr: 2 }}
+          startIcon={<ArrowBackRounded />}
+          sx={{
+            fontWeight: 700,
+            borderRadius: 2,
+            color: "text.secondary",
+            "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.05) },
+          }}
         >
-          Back
+          Back to Dashboard
         </Button>
       </Box>
 
-      <Box
+      {/* League Identity Card */}
+      <Paper
+        elevation={0}
+        variant="outlined"
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          mb: 2,
+          borderRadius: 3,
+          bgcolor: alpha(theme.palette.primary.main, 0.02),
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+          mb: 4,
+          overflow: "hidden",
         }}
       >
-        <Box>
-          <Typography variant="h3" gutterBottom>
-            {leagueInfo.name} ({leagueId})
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="subtitle1" color="text.secondary">
-              Invite Code: <strong>{leagueInfo.invite_code}</strong>
-            </Typography>
-            <Tooltip title="Copy Code">
-              <IconButton size="small" onClick={handleCopyCode} sx={{ ml: 1 }}>
-                <ContentCopy fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Box>
-
-        {/* The link to the actual predictor form */}
-        <Button
-          variant="contained"
-          size="large"
-          color="primary"
-          startIcon={<EditNote />}
-          component={Link}
-          href="/predictor"
+        <Stack
+          sx={{
+            p: { xs: 2, md: 2.5 }, // Reduced padding
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", md: "center" },
+            gap: 2,
+          }}
         >
-          My Bracket
-        </Button>
-      </Box>
+          <Stack sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: 800, letterSpacing: "-0.02em" }}
+            >
+              {leagueInfo.name}
+            </Typography>
 
-      {/* Leaderboard Table */}
-      <TableContainer component={Paper} variant="outlined">
-        <Table>
-          <TableHead sx={{ bgcolor: "grey.100" }}>
-            <TableRow>
-              <TableCell width="10%">
-                <strong>Rank</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Player</strong>
-              </TableCell>
-              <TableCell align="right">
-                <strong>Total Points</strong>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {leaderboard.map((entry, index) => (
-              <TableRow key={entry.id} hover>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{entry.display_name}</TableCell>
-                <TableCell align="right">
-                  <Typography variant="h6" color="primary">
-                    {entry.total_score}
+            <Stack
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                // alignItems: "center",
+                gap: 2,
+              }}
+            >
+              {/* Member Count */}
+              <Stack
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 0.75,
+                  color: "text.secondary",
+                }}
+              >
+                <PeopleRounded sx={{ fontSize: "1.1rem" }} />
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  {memberCount.members}{" "}
+                  {memberCount.members === 1 ? "Member" : "Members"}
+                </Typography>
+              </Stack>
+
+              {/* Invite Code Section */}
+              <Stack
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 700, color: "text.secondary" }}
+                >
+                  Invite Code:
+                </Typography>
+                <Stack
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      bgcolor: alpha(theme.palette.primary.main, 0.08),
+                      color: "primary.main",
+                      py: 0.5,
+                      px: 1.5,
+                      borderRadius: 1.5,
+                      fontWeight: 800,
+                      fontFamily: "monospace",
+                      fontSize: "0.85rem",
+                      letterSpacing: 1,
+                    }}
+                  >
+                    {leagueInfo.invite_code}
                   </Typography>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                  <Tooltip title={copied ? "Copied!" : "Copy Invite Code"}>
+                    <IconButton
+                      size="small"
+                      onClick={handleCopyCode}
+                      sx={{
+                        color: "primary.main",
+                        bgcolor: "white",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                        "&:hover": {
+                          bgcolor: "white",
+                          transform: "scale(1.1)",
+                        },
+                      }}
+                    >
+                      <ContentCopyRounded sx={{ fontSize: "1rem" }} />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              </Stack>
+            </Stack>
+          </Stack>
+        </Stack>
+      </Paper>
+
+      {/* Competitive Section */}
+      <Box sx={{ mt: 2 }}>
+        <Leaderboard
+          leaderboard={leaderboard}
+          global={false}
+          name={leagueInfo.name}
+        />
+      </Box>
     </Container>
   );
 }
