@@ -9,7 +9,7 @@ export async function GET() {
     const response = await axios.get(
       `https://${process.env.FOOTBALL_API_HOST}/standings`,
       {
-        params: { league: "1", season: "2022" },
+        params: { league: "1", season: "2026" },
         headers: { "x-apisports-key": process.env.FOOTBALL_API_KEY },
       },
     );
@@ -26,13 +26,9 @@ export async function GET() {
         const teamId = entry.team.id;
         const groupFullName = entry.group; // e.g., "Group A"
 
-        // Extract just the letter (e.g., 'A') if your DB column is a CHAR(1)
-        // or just use the full string if your DB column is VARCHAR
-        const groupLetter = groupFullName.replace("Group ", "");
-
         await sql`
           UPDATE teams 
-          SET group_name = ${groupLetter} 
+          SET group_name = ${groupFullName} 
           WHERE id = ${teamId}
         `;
 

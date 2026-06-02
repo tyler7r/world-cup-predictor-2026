@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { Box } from "@mui/material";
 import { neon } from "@neondatabase/serverless";
 import DashboardPage from "./dashboard/page";
 
@@ -21,10 +22,8 @@ export default async function Dashboard() {
   }
 
   return (
-    <div>
-      <h1>Welcome to the Predictor, {user?.firstName}!</h1>
+    <Box>
       <DashboardPage />
-      {/* Rest of your dashboard */}
-    </div>
+    </Box>
   );
 }

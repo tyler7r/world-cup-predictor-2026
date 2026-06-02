@@ -2,18 +2,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { neon } from "@neondatabase/serverless";
 import { redirect } from "next/navigation";
+import { LeaderboardEntry } from "../types";
 import LeagueClient from "./LeagueClient";
 
 // Define the types for our specific SQL returns
 export type LeagueInfo = {
   name: string;
   invite_code: string;
-};
-
-export type LeaderboardEntry = {
-  id: string; // The user's ID, useful for linking to their specific bracket later
-  display_name: string;
-  total_score: number;
 };
 
 export default async function LeaguePage(props: {
@@ -42,20 +37,38 @@ export default async function LeaguePage(props: {
 
   const leagueInfo = membershipCheck[0];
 
+  const leagueMembers = (await sql`
+    SELECT COUNT(user_id) as members
+    FROM league_members lm
+    WHERE league_id = ${leagueId}
+  `) as { members: number }[];
+
   // 2. Fetch the Leaderboard
   const leaderboard = (await sql`
-    SELECT u.id, u.display_name, u.points_earned
-    FROM users u
-    JOIN league_members lm ON u.id = lm.user_id
-    WHERE lm.league_id = ${leagueId}
-    ORDER BY u.points_earned DESC, u.display_name ASC
-  `) as LeaderboardEntry[];
+  SELECT 
+    lb.user_id, 
+    lb.display_name, 
+    lb.total_points, 
+    lb.entered_pool,
+    t.id,
+    t.flag_url
+  FROM leaderboard lb
+  JOIN league_members lm ON lb.user_id = lm.user_id
+  JOIN prediction_knockouts k ON lb.user_id = k.user_id
+  JOIN teams t ON k.team_id = t.id
+  WHERE lm.league_id = ${leagueId} AND k.stage = 'Winner'
+  ORDER BY lb.total_points DESC, lb.display_name ASC
+`) as LeaderboardEntry[];
+
+  // JOIN league_members lm ON u.id = lm.user_id
+  // WHERE lm.league_id = ${leagueId}
 
   return (
     <LeagueClient
       leagueId={leagueId}
       leagueInfo={leagueInfo}
       leaderboard={leaderboard}
+      memberCount={leagueMembers[0]}
     />
   );
 }

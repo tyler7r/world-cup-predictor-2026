@@ -61,8 +61,8 @@ export default function ReferenceBracket({
   // ];
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Accordion variant="outlined">
+    <Box sx={{ mb: 2 }}>
+      <Accordion variant="elevation">
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="subtitle2" color="primary">
             View Reference Bracket Structure
@@ -76,7 +76,7 @@ export default function ReferenceBracket({
             Note: To maximize points, avoid picking both teams from the same
             match to advance.
           </Typography>
-          {currentStage === "Round of 16"
+          {currentStage === "Round of 32"
             ? r32Matches.map((m) => (
                 <Box key={m.id} sx={{ mb: 1 }}>
                   <Typography variant="body2" sx={{ fontWeight: "bold" }}>
@@ -88,7 +88,7 @@ export default function ReferenceBracket({
                   <Divider sx={{ my: 0.5 }} />
                 </Box>
               ))
-            : currentStage === "Quarter-finals"
+            : currentStage === "Round of 16"
               ? r16Matches.map((m) => (
                   <Box key={m.id} sx={{ mb: 1 }}>
                     <Typography variant="body2" sx={{ fontWeight: "bold" }}>
@@ -100,7 +100,7 @@ export default function ReferenceBracket({
                     <Divider sx={{ my: 0.5 }} />
                   </Box>
                 ))
-              : currentStage === "Semi-finals"
+              : currentStage === "Quarter-finals"
                 ? r8Matches.map((m) => (
                     <Box key={m.id} sx={{ mb: 1 }}>
                       <Typography variant="body2" sx={{ fontWeight: "bold" }}>
