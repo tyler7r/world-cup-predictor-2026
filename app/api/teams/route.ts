@@ -2,7 +2,11 @@
 import { neon } from "@neondatabase/serverless";
 import axios from "axios";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const authHeader = request.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return Response.json({ error: "Unauthorized request" }, { status: 401 });
+  }
   const sql = neon(process.env.DATABASE_URL!);
 
   try {
@@ -23,7 +27,7 @@ export async function GET() {
 
     for (const team of teams) {
       await sql`
-        INSERT INTO teams (id, name, name_code, flag_url)
+        UPSERT INTO teams (id, name, name_code, flag_url)
         VALUES (
           ${team.team.id}, 
           ${team.team.name},

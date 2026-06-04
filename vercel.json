@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/matches",
+      "schedule": "30 */1 * * *"
+    },
+    { "path": "/api/current-standings", "schedule": "30 */1 * * *" }
+  ]
+}
