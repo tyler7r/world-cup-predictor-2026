@@ -25,8 +25,12 @@ export interface APIFootballResponse {
   }>;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const sql = neon(process.env.DATABASE_URL!);
+  const authHeader = request.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return Response.json({ error: "Unauthorized request" }, { status: 401 });
+  }
 
   try {
     const response = await axios.get(

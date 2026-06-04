@@ -14,7 +14,6 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { useEffect } from "react";
 import { Tiebreakers } from "../types";
 
 type LockedTieBreakerProps = {
@@ -24,10 +23,6 @@ type LockedTieBreakerProps = {
 export default function LockedTieBreakerStep({ data }: LockedTieBreakerProps) {
   // Historical data for the table
   const theme = useTheme();
-
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
 
   const historicalData = [
     { year: 2022, host: "Qatar", games: 64, goals: 172, yellow: 227, red: 4 },
