@@ -121,6 +121,16 @@ export default async function GroupStageStepContainer({
   const tiebreakers = tiebreakersResult[0];
 
   const initialKnockouts: KnockoutData = {
+    r32: knockoutRows
+      .filter((r) => r.stage === "Round of 32")
+      .map((r) => ({
+        id: r.team_id,
+        rank: r.rank,
+        name: r.name,
+        flag_url: r.flag_url,
+        name_code: r.name_code,
+        group_name: r.group_name,
+      })),
     r16: knockoutRows
       .filter((r) => r.stage === "Round of 16")
       .map((r) => ({
