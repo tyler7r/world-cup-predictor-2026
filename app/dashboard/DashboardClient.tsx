@@ -196,7 +196,7 @@ export default function DashboardClient({
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" },
+              gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
               gap: { xs: 2, md: 3 },
               mt: 1,
               width: "100%",
@@ -223,7 +223,7 @@ export default function DashboardClient({
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" },
+              gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
               gap: { xs: 2, md: 3 },
               mt: 1,
               width: "100%",

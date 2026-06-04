@@ -259,6 +259,7 @@ export default function PredictorPage({
 
   const handleKnockoutComplete = async (moveToTiebreakers: boolean) => {
     const knockoutpickIds = {
+      r32: knockoutPicks.r32.map((p) => p.id) || [],
       r16: knockoutPicks.r16.map((p) => p.id) || [],
       qf: knockoutPicks.qf.map((p) => p.id) || [],
       sf: knockoutPicks.sf.map((p) => p.id) || [],
