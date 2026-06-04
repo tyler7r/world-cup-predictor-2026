@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CircleIcon from "@mui/icons-material/Circle";
@@ -581,6 +582,97 @@ export default function GroupStageStep({
               }}
             />
           </Box>
+        </Box>
+        <Box
+          sx={{
+            py: 0.5,
+            mb: 1,
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          {matchesRemaining > 0 && (
+            <Typography
+              variant="caption"
+              sx={{
+                bgcolor: "action.hover",
+                color: "text.secondary",
+                px: 2,
+                py: 0.75,
+                borderRadius: 2,
+                fontWeight: 600,
+                letterSpacing: 0.5,
+              }}
+            >
+              {matchesRemaining} MATCHES LEFT
+            </Typography>
+          )}
+          {selectionsRemaining > 0 && (
+            <Typography
+              variant="caption"
+              sx={{
+                bgcolor: (theme) => alpha(theme.palette.error.main, 0.1),
+                color: "error.main",
+                px: 2,
+                py: 0.75,
+                borderRadius: 2,
+                fontWeight: 600,
+                letterSpacing: 0.5,
+              }}
+            >
+              {selectionsRemaining} RANKINGS LEFT
+            </Typography>
+          )}
+          {matchesRemaining === 0 &&
+            selectionsRemaining === 0 &&
+            !hasWinnerDuplicate && (
+              <Typography
+                variant="caption"
+                sx={{
+                  bgcolor: (theme) => alpha(theme.palette.success.main, 0.1),
+                  color: "success.main",
+                  border: 1,
+                  borderColor: (theme) =>
+                    alpha(theme.palette.success.main, 0.3),
+                  px: 2,
+                  py: 0.75,
+                  borderRadius: 2,
+                  fontWeight: 700,
+                  letterSpacing: 0.5,
+                }}
+              >
+                GROUP {groups[activeTab]} COMPLETE
+              </Typography>
+            )}
+        </Box>
+        <Box sx={{ width: "100%", display: "flex" }}>
+          {activeTab > 0 && (
+            <Button
+              startIcon={<ArrowBackIos />}
+              onClick={() => setActiveTab((prev) => prev - 1)}
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "flex-start",
+              }}
+            >
+              Group {groups[activeTab - 1]}
+            </Button>
+          )}
+          {activeTab < 11 && (
+            <Button
+              endIcon={<ArrowForwardIos />}
+              onClick={() => setActiveTab((prev) => prev + 1)}
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              Group {groups[activeTab + 1]}
+            </Button>
+          )}
         </Box>
       </Box>
       <Fab

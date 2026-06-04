@@ -29,6 +29,8 @@ export default function GroupMatch({ m }: { m: Match }) {
     return `${d} - ${time}`;
   };
 
+  const isGroupStageGame = m.stage.includes("Group Stage");
+
   return (
     <Paper
       key={m.api_fixture_id}
@@ -78,131 +80,136 @@ export default function GroupMatch({ m }: { m: Match }) {
           width: "100%",
         }}
       >
-        <Stack
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 1,
-            width: "100%",
-          }}
-        >
-          <Typography variant="caption" sx={{ color: "text.secondary" }}>
-            PREDICTION
-          </Typography>
-          <Box
+        {isGroupStageGame && (
+          <Stack
             sx={{
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              gap: 1.5,
-              flex: 1,
+              justifyContent: "center",
+              gap: 1,
+              width: "100%",
             }}
           >
-            <Avatar
-              src={m.home_flag}
-              variant="rounded"
-              sx={{ width: 32, height: 24 }}
-            />
-            <Typography
-              sx={{
-                fontSize: "0.95rem",
-                fontWeight: 600,
-                textAlign: "right",
-                fontStyle: "italic",
-              }}
-            >
-              {m.home_code}
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+              PREDICTION
             </Typography>
             <Box
               sx={{
-                px: 1,
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                bgcolor: (theme) =>
-                  alpha(theme.palette.action.disabledBackground, 0.04),
-                borderRadius: 1, // Subtle rounding
-                border: 1,
-                borderColor: "divider",
+                gap: 1.5,
+                flex: 1,
               }}
             >
+              <Avatar
+                src={m.home_flag}
+                variant="rounded"
+                sx={{ width: 32, height: 24 }}
+              />
               <Typography
                 sx={{
-                  fontWeight: "bold",
-                  fontSize: "1rem",
-                  color: "text.primary",
-                  textAlign: "center",
+                  fontSize: "0.95rem",
+                  fontWeight: 600,
+                  textAlign: "right",
+                  fontStyle: "italic",
                 }}
               >
-                {m.home_goals_predicted ?? "-"}
+                {m.home_code}
               </Typography>
+              <Box
+                sx={{
+                  px: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: (theme) =>
+                    alpha(theme.palette.action.disabledBackground, 0.04),
+                  borderRadius: 1, // Subtle rounding
+                  border: 1,
+                  borderColor: "divider",
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1rem",
+                    color: "text.primary",
+                    textAlign: "center",
+                  }}
+                >
+                  {m.home_goals_predicted ?? "-"}
+                </Typography>
+              </Box>
             </Box>
-          </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1.5,
-              flex: 1,
-            }}
-          >
-            <Avatar
-              src={m.away_flag}
-              variant="rounded"
-              sx={{ width: 32, height: 24 }}
-            />
-            <Typography
-              sx={{
-                fontSize: "0.95rem",
-                fontWeight: 600,
-                textAlign: "left",
-                fontStyle: "italic",
-              }}
-            >
-              {m.away_code}
-            </Typography>
             <Box
               sx={{
-                px: 1,
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                bgcolor: (theme) =>
-                  alpha(theme.palette.action.disabledBackground, 0.04),
-                borderRadius: 1, // Subtle rounding
-                border: 1,
-                borderColor: "divider",
+                gap: 1.5,
+                flex: 1,
               }}
             >
+              <Avatar
+                src={m.away_flag}
+                variant="rounded"
+                sx={{ width: 32, height: 24 }}
+              />
               <Typography
                 sx={{
-                  fontWeight: "bold",
-                  fontSize: "1rem",
-                  color: "text.primary",
-                  textAlign: "center",
+                  fontSize: "0.95rem",
+                  fontWeight: 600,
+                  textAlign: "left",
+                  fontStyle: "italic",
                 }}
               >
-                {m.away_goals_predicted ?? "-"}
+                {m.away_code}
               </Typography>
+              <Box
+                sx={{
+                  px: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: (theme) =>
+                    alpha(theme.palette.action.disabledBackground, 0.04),
+                  borderRadius: 1, // Subtle rounding
+                  border: 1,
+                  borderColor: "divider",
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1rem",
+                    color: "text.primary",
+                    textAlign: "center",
+                  }}
+                >
+                  {m.away_goals_predicted ?? "-"}
+                </Typography>
+              </Box>
             </Box>
-          </Box>
-        </Stack>
+          </Stack>
+        )}
         <Divider orientation="vertical" flexItem />
         <Stack
           sx={{
             display: "flex",
-            flexDirection: "column",
+            flexDirection: isGroupStageGame ? "column" : "row",
             alignItems: "center",
             justifyContent: "center",
             gap: 1,
             width: "100%",
+            py: !isGroupStageGame ? 1 : 0,
           }}
         >
-          <Typography variant="caption" sx={{ color: "text.secondary" }}>
-            ACTUAL
-          </Typography>
+          {isGroupStageGame && (
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+              ACTUAL
+            </Typography>
+          )}
           <Box
             sx={{
               display: "flex",
@@ -248,11 +255,17 @@ export default function GroupMatch({ m }: { m: Match }) {
                   textAlign: "center",
                 }}
               >
-                {m.home_goals_actual ?? "-"}
+                {m.status === "Not Started"
+                  ? "-"
+                  : (m.home_goals_actual ?? "-")}
               </Typography>
             </Box>
           </Box>
-
+          {!isGroupStageGame && (
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+              vs.
+            </Typography>
+          )}
           <Box
             sx={{
               display: "flex",
@@ -298,35 +311,39 @@ export default function GroupMatch({ m }: { m: Match }) {
                   textAlign: "center",
                 }}
               >
-                {m.away_goals_actual ?? "-"}
+                {m.status === "Not Started"
+                  ? "-"
+                  : (m.away_goals_actual ?? "-")}
               </Typography>
             </Box>
           </Box>
         </Stack>
       </Stack>
-      <Typography
-        variant="caption"
-        sx={{
-          textAlign: "center",
-          mt: 2,
-          fontWeight: 600,
-          letterSpacing: 0.5,
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-          color: "text.secondary",
-        }}
-      >
-        {m.venue} / {m.stage}
-      </Typography>
+      {isGroupStageGame && (
+        <Typography
+          variant="caption"
+          sx={{
+            textAlign: "center",
+            mt: 2,
+            fontWeight: 600,
+            letterSpacing: 0.5,
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            color: "text.secondary",
+          }}
+        >
+          {m.venue} / {m.stage}
+        </Typography>
+      )}
       <Paper
         sx={{
           bgcolor:
             isFinished && m.points_earned && m.points_earned > 1
               ? theme.palette.success.light
-              : isFinished && m.points_earned && m.points_earned == 1
-                ? theme.palette.divider
-                : theme.palette.error.light,
+              : isFinished && m.points_earned && m.points_earned == 0
+                ? theme.palette.error.light
+                : theme.palette.divider,
           width: "100%",
           borderTopLeftRadius: 2,
           borderTopRightRadius: 2,
@@ -337,20 +354,38 @@ export default function GroupMatch({ m }: { m: Match }) {
           mt: 1,
         }}
       >
-        <Typography
-          variant="caption"
-          sx={{
-            textAlign: "center",
-            fontWeight: 600,
-            letterSpacing: 0.5,
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          Points Earned: {isFinished ? m.points_earned : "N/A"}
-        </Typography>
+        {isGroupStageGame ? (
+          <Typography
+            variant="caption"
+            sx={{
+              textAlign: "center",
+              fontWeight: 600,
+              letterSpacing: 0.5,
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            Points Earned: {isFinished ? m.points_earned : "N/A"}
+          </Typography>
+        ) : (
+          <Typography
+            variant="caption"
+            sx={{
+              textAlign: "center",
+              // mt: 2,
+              fontWeight: 600,
+              letterSpacing: 0.5,
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              color: "text.secondary",
+            }}
+          >
+            {m.venue} / {m.stage}
+          </Typography>
+        )}
       </Paper>
     </Paper>
   );

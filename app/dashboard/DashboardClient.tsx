@@ -39,6 +39,9 @@ interface DashboardClientProps {
   upcomingMatches: Match[];
   leaderboard: LeaderboardEntry[];
   pointsBreakdown: PointsBreakdownType;
+  recentMatches: Match[];
+  lastUpdated: { matches: string };
+  maxAvailableGroupPoints: string;
 }
 
 export default function DashboardClient({
@@ -46,6 +49,9 @@ export default function DashboardClient({
   upcomingMatches,
   leaderboard,
   pointsBreakdown,
+  recentMatches,
+  lastUpdated,
+  maxAvailableGroupPoints,
 }: DashboardClientProps) {
   const theme = useTheme();
 
@@ -97,9 +103,15 @@ export default function DashboardClient({
         gap: 2,
         flexDirection: "column",
         width: "100%",
+        py: 2,
+        pb: 8,
       }}
     >
-      <PointsBreakdown breakdown={pointsBreakdown} />
+      <PointsBreakdown
+        breakdown={pointsBreakdown}
+        lastUpdated={lastUpdated}
+        maxAvailableGroupPoints={maxAvailableGroupPoints}
+      />
       <Typography variant="h5" sx={{ fontWeight: "bold", mt: 2 }}>
         My Pools
       </Typography>
@@ -130,8 +142,8 @@ export default function DashboardClient({
 
       {/* Leagues Grid */}
       {leagues.length === 0 ? (
-        <Typography color="text.secondary">
-          You have not joined any leagues yet.
+        <Typography sx={{ color: "text.secondary", px: 1 }}>
+          You have not joined any private pools yet.
         </Typography>
       ) : (
         <Grid container size={{ xs: 4, sm: 4, md: 3 }} spacing={2}>
@@ -176,23 +188,57 @@ export default function DashboardClient({
         </Grid>
       )}
       <Leaderboard leaderboard={leaderboard} global={true} name={"Global"} />
-
-      <Typography variant="h5" sx={{ fontWeight: "bold", mt: 2 }}>
-        Upcoming Matches
-      </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" },
-          gap: { xs: 2, md: 3 },
-          mt: 1,
-          width: "100%",
-        }}
-      >
-        {upcomingMatches.map((m) => (
-          <GroupMatch key={m.api_fixture_id} m={m} />
-        ))}
-      </Box>
+      {recentMatches.length > 0 && (
+        <Box sx={{ display: "flex", width: "100%", flexDirection: "column" }}>
+          <Typography variant="h5" sx={{ fontWeight: "bold", mt: 2 }}>
+            Recent Matches
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" },
+              gap: { xs: 2, md: 3 },
+              mt: 1,
+              width: "100%",
+            }}
+          >
+            {recentMatches.map((m) => (
+              <GroupMatch key={m.api_fixture_id} m={m} />
+            ))}
+          </Box>
+        </Box>
+      )}
+      {upcomingMatches.length > 0 ? (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            width: "100%",
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: "bold", mt: 2 }}>
+            Upcoming Matches
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" },
+              gap: { xs: 2, md: 3 },
+              mt: 1,
+              width: "100%",
+            }}
+          >
+            {upcomingMatches.map((m) => (
+              <GroupMatch key={m.api_fixture_id} m={m} />
+            ))}
+          </Box>
+        </Box>
+      ) : (
+        <Typography sx={{ color: "text.secondary", px: 1 }}>
+          The tournament must be over! Did it come home?
+        </Typography>
+      )}
 
       {/* CREATE LEAGUE MODAL */}
       <Dialog

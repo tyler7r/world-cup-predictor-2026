@@ -17,8 +17,19 @@ export default async function GroupStageStepContainer() {
   const { userId } = authObject;
   const sql = neon(process.env.DATABASE_URL!);
 
-  // Explicitly cast the query to Match[]
-  const matches = (await sql`
+  const [
+    matches,
+    actualKnockoutTeams,
+    eliminatedTeamsQuery,
+    standingPredictions,
+    actualStandings,
+    teams,
+    initialThirdPlaceChoices,
+    knockoutRows,
+    [tiebreakers],
+  ] = await Promise.all([
+    // Explicitly cast the query to Match[]
+    sql`
     SELECT 
       m.api_fixture_id, 
       m.home_team_id, 
@@ -48,9 +59,9 @@ export default async function GroupStageStepContainer() {
     LEFT JOIN prediction_group_matches p 
       ON m.api_fixture_id = p.match_id AND p.user_id = ${userId}
     ORDER BY t.group_name, m.kickoff_time ASC
-  `) as Match[];
+  ` as unknown as Promise<Match[]>,
 
-  const actualKnockoutTeams = (await sql`
+    sql`
     SELECT 
   stage, 
   status, 
@@ -60,37 +71,40 @@ export default async function GroupStageStepContainer() {
   loser_team_id 
 FROM matches 
 WHERE stage NOT IN ('Group Stage - 1', 'Group Stage - 2', 'Group Stage - 3');
-  `) as ActualKnockoutTeams[];
+  ` as unknown as Promise<ActualKnockoutTeams[]>,
 
-  const eliminatedTeamsQuery = (await sql`
+    sql`
   -- A. Teams that lost a knockout match BEFORE the semi-finals 
-  -- (SF losers go to 3rd place match, so they aren't "going home" yet)
   SELECT loser_team_id as team_id 
   FROM matches 
   WHERE stage IN ('Round of 32', 'Round of 16', 'Quarter-finals') 
-  AND status = 'finished' 
+  AND status = 'Match Finished' 
   AND loser_team_id IS NOT NULL
 
   UNION
 
   -- B. Teams eliminated in the group stage
-  -- (Their group has a finalized winner, but they aren't in any R32 match)
   SELECT t.id as team_id
   FROM teams t
-  JOIN standings s ON t.group_name = s.group_name
-  WHERE s.winner_team_id IS NOT NULL 
-  AND t.id NOT IN (
-    SELECT home_team_id FROM matches WHERE stage = 'Round of 32' AND home_team_id IS NOT NULL
-    UNION
-    SELECT away_team_id FROM matches WHERE stage = 'Round of 32' AND away_team_id IS NOT NULL
-  )
-`) as { team_id: number }[];
+  WHERE 
+    -- GATEKEEPER: Only proceed if 0 matches in this team's group are unfinished
+    (
+      SELECT COUNT(*) 
+      FROM matches m
+      JOIN teams t2 ON (m.home_team_id = t2.id OR m.away_team_id = t2.id)
+      WHERE t2.group_name = t.group_name
+      AND m.status != 'Match Finished'
+    ) = 0
+    
+    -- ELIMINATION CHECK: The group is done, but they aren't in the R32 bracket
+    AND t.id NOT IN (
+      SELECT home_team_id FROM matches WHERE stage = 'Round of 32' AND home_team_id IS NOT NULL
+      UNION
+      SELECT away_team_id FROM matches WHERE stage = 'Round of 32' AND away_team_id IS NOT NULL
+    )
+` as unknown as Promise<{ team_id: number }[]>,
 
-  const actualEliminatedTeamIds = eliminatedTeamsQuery.map(
-    (row) => row.team_id,
-  ) as number[];
-
-  const data = (await sql`
+    sql`
     SELECT  
       t.group_name,
       w.id as w_id,
@@ -115,9 +129,9 @@ WHERE stage NOT IN ('Group Stage - 1', 'Group Stage - 2', 'Group Stage - 3');
     JOIN teams t ON s.third_place_team_id = t.id
     WHERE s.user_id = ${userId}
     ORDER BY t.group_name ASC
-  `) as StandingPredictions[];
+  ` as unknown as Promise<StandingPredictions[]>,
 
-  const actualStandings = (await sql`
+    sql`
     SELECT  
       s.group_name,
       w.id as w_id,
@@ -137,30 +151,43 @@ WHERE stage NOT IN ('Group Stage - 1', 'Group Stage - 2', 'Group Stage - 3');
     JOIN teams r ON s.runner_up_team_id = r.id
     JOIN teams t ON s.third_place_team_id = t.id
     ORDER BY s.group_name ASC
-  `) as ActualStandingsType[];
+  ` as unknown as Promise<ActualStandingsType[]>,
 
-  const teams = (await sql`
+    sql`
     SELECT *
     FROM teams
-    `) as Team[];
+    ` as unknown as Promise<Team[]>,
 
-  const initialThirdPlaceChoices = await sql`
+    sql`
   SELECT team_id as team_id
   FROM prediction_third_place_advancement 
-  WHERE user_id = ${userId}`;
+  WHERE user_id = ${userId}`,
+
+    sql`
+  SELECT k.team_id, k.stage, t.rank, t.name, t.flag_url, t.name_code, t.group_name FROM prediction_knockouts k JOIN teams t ON k.team_id = t.id WHERE user_id = ${userId}
+  `,
+
+    sql`
+  SELECT predicted_total_goals, predicted_yellow_cards, predicted_red_cards FROM users WHERE id = ${userId} LIMIT 1` as unknown as Promise<
+      Tiebreakers[]
+    >,
+  ]);
 
   const initialThirds: number[] = initialThirdPlaceChoices.map(
     (r) => r.team_id,
   );
 
-  const knockoutRows = await sql`
-  SELECT k.team_id, k.stage, t.rank, t.name, t.flag_url, t.name_code, t.group_name FROM prediction_knockouts k JOIN teams t ON k.team_id = t.id WHERE user_id = ${userId}
-  `;
-
-  const [tiebreakers] = (await sql`
-  SELECT predicted_total_goals, predicted_yellow_cards, predicted_red_cards FROM users WHERE id = ${userId} LIMIT 1`) as Tiebreakers[];
-
   const initialKnockouts: KnockoutData = {
+    r32: knockoutRows
+      .filter((r) => r.stage === "Round of 32")
+      .map((r) => ({
+        id: r.team_id,
+        rank: r.rank,
+        name: r.name,
+        flag_url: r.flag_url,
+        name_code: r.name_code,
+        group_name: r.group_name,
+      })),
     r16: knockoutRows
       .filter((r) => r.stage === "Round of 16")
       .map((r) => ({
@@ -235,13 +262,17 @@ WHERE stage NOT IN ('Group Stage - 1', 'Group Stage - 2', 'Group Stage - 3');
       })),
   };
 
+  const actualEliminatedTeamIds = eliminatedTeamsQuery.map(
+    (row) => row.team_id,
+  ) as number[];
+
   const isLocked = new Date() > new Date(matches[0]?.kickoff_time);
 
   return isLocked ? (
     <LockedPredictorPage
       initialKnockouts={initialKnockouts}
       initialMatches={matches}
-      initialStandings={data}
+      initialStandings={standingPredictions}
       allTeams={teams}
       initialThirdPlaces={initialThirds}
       initialTiebreakers={tiebreakers}
@@ -252,7 +283,7 @@ WHERE stage NOT IN ('Group Stage - 1', 'Group Stage - 2', 'Group Stage - 3');
   ) : (
     <PredictorPage
       initialMatches={matches}
-      initialStandings={data}
+      initialStandings={standingPredictions}
       allTeams={teams}
       userId={userId}
       initialKnockouts={initialKnockouts}

@@ -54,19 +54,31 @@ export default async function DashboardPage() {
       display_name = EXCLUDED.display_name
   `;
 
-  // 2. Fetch the user's leagues (including a count of total members)
-  const userLeagues = (await sql`
+  const d = new Date();
+
+  const [
+    userLeagues,
+    upcomingMatches,
+    recentMatches,
+    leaderboard,
+    groupStagePoints,
+    standingsPoints,
+    knockoutPoints,
+    tiebreakerPoints,
+    maxAvailableGroupPoints,
+    lastUpdatedTimes,
+  ] = await Promise.all([
+    // 2. Fetch the user's leagues (including a count of total members)
+    sql`
     SELECT l.id as id, l.name as name, l.invite_code as invite_code,
            (SELECT COUNT(*)::int FROM league_members WHERE league_id = l.id) as member_count
     FROM leagues l
     JOIN league_members lm ON l.id = lm.league_id
     WHERE lm.user_id = ${userId}
     ORDER BY l.created_at DESC
-  `) as LeagueDetails[];
+  ` as unknown as Promise<LeagueDetails[]>,
 
-  const d = new Date();
-
-  const upcomingMatches = (await sql`
+    sql`
       SELECT 
         m.api_fixture_id, 
         m.home_team_id, 
@@ -97,38 +109,80 @@ export default async function DashboardPage() {
       WHERE m.kickoff_time > ${d.toISOString()}
       ORDER BY m.kickoff_time ASC
       LIMIT 4
-    `) as Match[];
+    ` as unknown as Promise<Match[]>,
 
-  const leaderboard = (await sql`
+    sql`
+      SELECT 
+        m.api_fixture_id, 
+        m.home_team_id, 
+        m.away_team_id, 
+        m.stage,
+        h.group_name,
+        m.status,
+        h.name as home_name, 
+        a.name as away_name,
+        h.rank as home_rank,
+        a.rank as away_rank,
+        p.home_goals_predicted, 
+        p.away_goals_predicted,
+        h.flag_url as home_flag,
+        a.flag_url as away_flag,
+        h.name_code as home_code,
+        a.name_code as away_code,
+        m.kickoff_time as kickoff_time,
+        m.away_goals_actual,
+        m.home_goals_actual,
+        p.points_earned,
+        m.venue
+      FROM matches m
+      JOIN teams h ON m.home_team_id = h.id
+      JOIN teams a ON m.away_team_id = a.id
+      LEFT JOIN prediction_group_matches p 
+        ON m.api_fixture_id = p.match_id AND p.user_id = ${userId}
+      WHERE m.status = 'Match Finished'
+      ORDER BY m.kickoff_time DESC
+      LIMIT 4
+    ` as unknown as Promise<Match[]>,
+
+    sql`
         SELECT l.user_id, l.display_name, l.total_points, l.entered_pool, k.team_id, t.flag_url
         FROM leaderboard l
         JOIN prediction_knockouts k ON l.user_id = k.user_id
         JOIN teams t ON k.team_id = t.id
         WHERE k.stage = 'Winner'
         ORDER BY total_points DESC, display_name ASC
-      `) as LeaderboardEntry[];
+      ` as unknown as Promise<LeaderboardEntry[]>,
 
-  const groupStagePoints = (await sql`
+    sql`
       SELECT SUM(points_earned) as points_earned FROM prediction_group_matches WHERE user_id = ${userId}
-    `) as PointsEarnedType[];
+    ` as unknown as Promise<PointsEarnedType[]>,
 
-  const standingsPoints =
-    (await sql` SELECT SUM(points_earned) as points_earned FROM prediction_group_standings WHERE user_id = ${userId}
-    `) as PointsEarnedType[];
+    sql` SELECT SUM(points_earned) as points_earned FROM prediction_group_standings WHERE user_id = ${userId}
+    ` as unknown as Promise<PointsEarnedType[]>,
 
-  const thirdPlacePoints =
-    (await sql`SELECT SUM(points_earned) as points_earned FROM prediction_third_place_advancement WHERE user_id = ${userId}
-    `) as PointsEarnedType[];
+    sql`SELECT SUM(points_earned) as points_earned FROM prediction_knockouts WHERE user_id = ${userId}
+    ` as unknown as Promise<PointsEarnedType[]>,
 
-  const knockoutPoints =
-    (await sql` SELECT SUM(points_earned) as points_earned FROM prediction_knockouts WHERE user_id = ${userId}
-    `) as PointsEarnedType[];
+    sql`SELECT SUM(points_earned) as points_earned FROM users WHERE id = ${userId}
+    ` as unknown as Promise<PointsEarnedType[]>,
+
+    sql`SELECT COUNT(DISTINCT api_fixture_id) as finished_match_count FROM matches WHERE status = 'Match Finished' AND stage IN ('Group Stage - 1', 'Group Stage - 2', 'Group Stage - 3')` as unknown as Promise<
+      {
+        finished_match_count: string;
+      }[]
+    >,
+
+    sql`
+    SELECT matches FROM last_updated` as unknown as Promise<
+      { matches: string }[]
+    >,
+  ]);
 
   const pointsBreakdown: PointsBreakdownType = {
     groupStage: groupStagePoints[0],
     standings: standingsPoints[0],
-    thirdPlace: thirdPlacePoints[0],
     knockout: knockoutPoints[0],
+    tiebreakers: tiebreakerPoints[0],
   };
 
   return (
@@ -138,7 +192,7 @@ export default async function DashboardPage() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          mb: 2,
+          mb: 1,
         }}
       >
         <Typography variant="h4" sx={{ fontWeight: "bold" }}>
@@ -152,6 +206,11 @@ export default async function DashboardPage() {
         upcomingMatches={upcomingMatches}
         leaderboard={leaderboard}
         pointsBreakdown={pointsBreakdown}
+        recentMatches={recentMatches}
+        lastUpdated={lastUpdatedTimes[0]}
+        maxAvailableGroupPoints={
+          maxAvailableGroupPoints[0].finished_match_count
+        }
       />
     </Container>
   );

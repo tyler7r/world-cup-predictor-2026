@@ -5,8 +5,11 @@ export const theme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "rgba(38, 198, 218, 1)", // Toned-down, sleek cyan
+      main: "rgba(38, 198, 218, 0.9)", // Toned-down, sleek cyan
       light: "rgba(38, 198, 218, 0.5)",
+    },
+    info: {
+      main: "rgb(255, 215, 0)",
     },
     success: {
       main: "rgba(102, 187, 106, 1)",

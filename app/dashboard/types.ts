@@ -14,6 +14,6 @@ export type PointsEarnedType = {
 export type PointsBreakdownType = {
   groupStage: PointsEarnedType;
   standings: PointsEarnedType;
-  thirdPlace: PointsEarnedType;
   knockout: PointsEarnedType;
+  tiebreakers: PointsEarnedType;
 };

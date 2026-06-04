@@ -39,9 +39,45 @@ export default function LeagueClient({
   const [copied, setCopied] = useState(false);
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(leagueInfo.invite_code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const code = leagueInfo.invite_code;
+
+    if (navigator.clipboard && window.isSecureContext) {
+      // Modern, secure context approach
+      navigator.clipboard
+        .writeText(code)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch((err) => console.error("Failed to copy text: ", err));
+    } else {
+      // Fallback approach for HTTP / local network IP testing
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = code;
+
+        // Avoid scrolling to bottom of page when appending
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        const successful = document.execCommand("copy");
+        document.body.removeChild(textArea);
+
+        if (successful) {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } else {
+          console.error("Fallback copy failed");
+        }
+      } catch (err) {
+        console.error("Fallback copy execution failed: ", err);
+      }
+    }
   };
 
   return (

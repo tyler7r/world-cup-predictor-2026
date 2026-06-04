@@ -60,9 +60,6 @@ export default async function LeaguePage(props: {
   ORDER BY lb.total_points DESC, lb.display_name ASC
 `) as LeaderboardEntry[];
 
-  // JOIN league_members lm ON u.id = lm.user_id
-  // WHERE lm.league_id = ${leagueId}
-
   return (
     <LeagueClient
       leagueId={leagueId}

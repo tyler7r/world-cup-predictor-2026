@@ -1,10 +1,10 @@
 "use client";
 
 import AddIcon from "@mui/icons-material/Add";
+import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import LeaderboardRoundedIcon from "@mui/icons-material/LeaderboardRounded";
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
-import PaidRoundedIcon from "@mui/icons-material/PaidRounded";
 import PublicIcon from "@mui/icons-material/Public";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import {
@@ -33,6 +33,7 @@ export default function Header() {
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("sm"));
+  const chainGold = "#FFD700";
 
   return (
     <AppBar
@@ -59,7 +60,7 @@ export default function Header() {
         {/* Left Side: Brand Text Title */}
         {isDesktop ? (
           <Box
-            onClick={() => router.push("/dashboard")}
+            onClick={() => void router.push("/")}
             sx={{
               cursor: "pointer",
               display: "flex",
@@ -92,7 +93,7 @@ export default function Header() {
           </Box>
         ) : (
           <Box
-            onClick={() => router.push("/dashboard")}
+            onClick={() => void router.push("/")}
             sx={{
               cursor: "pointer",
               display: "flex",
@@ -123,11 +124,9 @@ export default function Header() {
             <Tooltip title="Home">
               <IconButton
                 color={isNavActive("/") ? "primary" : "default"}
-                onClick={() => router.push("/dashboard")}
+                onClick={() => router.push("/")}
                 sx={{
-                  bgcolor: isNavActive("/dashboard")
-                    ? "action.hover"
-                    : "transparent",
+                  bgcolor: isNavActive("/") ? "action.hover" : "transparent",
                 }}
               >
                 <HomeRoundedIcon />
@@ -150,17 +149,21 @@ export default function Header() {
 
             <Tooltip title="Prize Pool">
               <IconButton
-                color={isNavActive("/pool-entry") ? "primary" : "default"}
+                color={isNavActive("/pool-entry") ? "default" : "default"}
                 onClick={() => router.push("/pool-entry")}
                 sx={{
                   bgcolor: isNavActive("/pool-entry")
-                    ? "action.hover"
+                    ? "transparent"
                     : "transparent",
                   // Subtle green highlight on the money icon if it's the active route
-                  ...(isNavActive("/pool-entry") && { color: "success.main" }),
+                  ...(isNavActive("/pool-entry") && { color: chainGold }),
                 }}
               >
-                <PaidRoundedIcon />
+                <ElectricBoltIcon
+                // sx={{
+                //   color: chainGold,
+                // }}
+                />
               </IconButton>
             </Tooltip>
           </Stack>

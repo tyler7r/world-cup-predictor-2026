@@ -13,6 +13,7 @@ export function pruneGhostPicks(
   ]);
 
   // 2. Filter using .id since the arrays now contain full Team objects
+  const r32 = prevPicks.r32.filter((team) => validGroupStageIds.has(team.id));
   const r16 = prevPicks.r16.filter((team) => validGroupStageIds.has(team.id));
   const qf = prevPicks.qf.filter((team) => validGroupStageIds.has(team.id));
   const sf = prevPicks.sf.filter((team) => validGroupStageIds.has(team.id));
@@ -34,6 +35,7 @@ export function pruneGhostPicks(
       : undefined;
 
   return {
+    r32,
     r16,
     qf,
     sf,
