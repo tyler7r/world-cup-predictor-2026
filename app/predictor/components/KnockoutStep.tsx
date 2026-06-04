@@ -58,10 +58,11 @@ export default function KnockoutStep({
       const runner = allTeams.find((t) => t.id === s.r_id);
       const third = allTeams.find((t) => t.id === s.t_id);
 
-      if (winner) pool.push({ team: winner, label: `1${s.group_name}` });
-      if (runner) pool.push({ team: runner, label: `2${s.group_name}` });
+      if (winner) pool.push({ team: winner, label: `Winner ${s.group_name}` });
+      if (runner)
+        pool.push({ team: runner, label: `Runner-up ${s.group_name}` });
       if (third && selectedThirdPlaceIds.includes(third.id)) {
-        pool.push({ team: third, label: `3${s.group_name}` });
+        pool.push({ team: third, label: `3rd Place ${s.group_name}` });
       }
     });
     return pool;
@@ -230,6 +231,8 @@ export default function KnockoutStep({
     { round: "Champion", description: "", nextRoundAbrv: "" },
   ];
 
+  const picksLeft = capacities[subStep] - currentSelections.length;
+
   return (
     <Box ref={topAnchorRef} sx={{ p: 2 }}>
       <Typography
@@ -248,21 +251,71 @@ export default function KnockoutStep({
             Runner-up.
           </Typography>
         ) : subStep === 3 ? (
-          <Typography variant="body2" color="text.secondary">
-            Select your two finalists, the two unselected teams will be your
-            third-place play-off prediction. <br />
-            <strong>
-              ({currentSelections.length} / {capacities[subStep]})
-            </strong>
-          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              Select your two finalists, the two unselected teams will be your
+              third-place play-off prediction. <br />
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                bgcolor: (theme) =>
+                  picksLeft > 0
+                    ? alpha(theme.palette.error.main, 0.1)
+                    : alpha(theme.palette.success.main, 0.1),
+                color: picksLeft > 0 ? "error.main" : "success.main",
+                px: 2,
+                py: 0.75,
+                borderRadius: 2,
+                fontWeight: 600,
+                letterSpacing: 0.5,
+                mt: 2,
+              }}
+            >
+              {picksLeft > 0
+                ? `${picksLeft} PICKS LEFT`
+                : `${roundScoreMatrix[subStep].abrv} COMPLETE`}
+            </Typography>
+          </Box>
         ) : (
-          <Typography variant="body2" color="text.secondary">
-            Select <b>{capacities[subStep]}</b> teams to advance to the{" "}
-            {roundScoreMatrix[subStep + 1].round}. <br />
-            <strong>
-              ({currentSelections.length} / {capacities[subStep]})
-            </strong>
-          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+              alignItems: "flex-start",
+            }}
+          >
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Select <b>{capacities[subStep]}</b> teams to advance to the{" "}
+              {roundScoreMatrix[subStep + 1].round}. <br />
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                bgcolor: (theme) =>
+                  picksLeft > 0
+                    ? alpha(theme.palette.error.main, 0.1)
+                    : alpha(theme.palette.success.main, 0.1),
+                color: picksLeft > 0 ? "error.main" : "success.main",
+                px: 2,
+                py: 0.75,
+                borderRadius: 2,
+                fontWeight: 600,
+                letterSpacing: 0.5,
+              }}
+            >
+              {picksLeft > 0
+                ? `${picksLeft} PICKS LEFT`
+                : `${roundScoreMatrix[subStep].abrv} COMPLETE`}
+            </Typography>
+          </Box>
         )}
       </Box>
       <Alert sx={{ mx: 1, my: 2 }} variant="outlined" severity="info">
@@ -271,7 +324,7 @@ export default function KnockoutStep({
 
       <ReferenceBracket currentStage={roundScoreMatrix[subStep].round} />
 
-      <Grid container spacing={2}>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
         {currentPool.map(({ team, label }) => {
           const isSelected = currentSelections.includes(team.id);
 
@@ -289,6 +342,7 @@ export default function KnockoutStep({
                   width: "100%",
                   display: "flex",
                   flexDirection: "column",
+                  justifyContent: "space-between",
                   borderColor: borderColor,
                   bgcolor: bgColor,
                   position: "relative",
@@ -297,6 +351,7 @@ export default function KnockoutStep({
                   borderWidth: isSelected ? 2 : 1,
                   opacity: 1,
                   textTransform: "none",
+                  height: "100%",
                 }}
               >
                 <Box sx={{ position: "absolute", top: 4, right: 8 }}>
@@ -321,6 +376,7 @@ export default function KnockoutStep({
                     alignItems: "center",
                     p: 1,
                     gap: 0.5,
+                    height: "100%",
                   }}
                 >
                   <Avatar
@@ -358,7 +414,7 @@ export default function KnockoutStep({
                       fontWeight: 700,
                       fontSize: "0.7rem",
                       display: "flex",
-                      gap: 1,
+                      gap: 0.75,
                     }}
                   >
                     <span>{label}</span>
@@ -370,62 +426,28 @@ export default function KnockoutStep({
             </Grid>
           );
         })}
-        {/* {currentPool.map(({ team, label }) => {
-          const isSelected = currentSelections.includes(team.id);
-          return (
-            <Grid size={{ xs: 4, sm: 3 }} key={team.id}>
-              <Paper
-                component={Button}
-                onClick={() => handleToggle(team)}
-                variant="outlined"
-                sx={{
-                  p: 1,
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  borderColor: isSelected ? "primary.main" : "divider",
-                  bgcolor: isSelected ? "action.selected" : "background.paper",
-                  textTransform: "none",
-                  minHeight: 135,
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ fontSize: "0.65rem", fontWeight: "bold" }}
-                >
-                  (#{team.rank})
-                </Typography>
-                <Avatar
-                  src={team.flag_url}
-                  variant="rounded"
-                  sx={{
-                    width: 54,
-                    height: 36,
-                    mb: 1,
-                  }}
-                />
-                <Typography
-                  variant="caption"
-                  sx={{ fontWeight: "bold", textAlign: "center" }}
-                  noWrap
-                >
-                  {team.name}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ fontSize: "0.65rem" }}
-                >
-                  {label}
-                </Typography>
-              </Paper>
-            </Grid>
-          );
-        })} */}
       </Grid>
+      <Typography
+        variant="caption"
+        sx={{
+          bgcolor: (theme) =>
+            picksLeft > 0
+              ? alpha(theme.palette.error.main, 0.1)
+              : alpha(theme.palette.success.main, 0.1),
+          color: picksLeft > 0 ? "error.main" : "success.main",
+          px: 2,
+          py: 0.75,
+          borderRadius: 2,
+          fontWeight: 600,
+          letterSpacing: 0.5,
+        }}
+      >
+        {picksLeft > 0
+          ? `${picksLeft} PICKS LEFT`
+          : `${roundScoreMatrix[subStep].abrv} COMPLETE`}
+      </Typography>
 
-      <Box sx={{ mt: 4, display: "flex", justifyContent: "space-between" }}>
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}>
         <Button
           disabled={subStep === 0}
           onClick={() => setSubStep(subStep - 1)}

@@ -1,6 +1,6 @@
 "use client";
 
-import MonetizationOnRoundedIcon from "@mui/icons-material/MonetizationOnRounded";
+import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import {
   Avatar,
   Box,
@@ -86,16 +86,20 @@ export default function Leaderboard({
             direction="row"
             spacing={1}
           >
-            <MonetizationOnRoundedIcon
-              color={showOnlyPaid ? "success" : "disabled"}
+            <ElectricBoltIcon
+              color={showOnlyPaid ? "info" : "disabled"}
               sx={{ fontSize: 20 }}
             />
+            {/* <MonetizationOnRoundedIcon
+              color={showOnlyPaid ? "success" : "disabled"}
+              sx={{ fontSize: 20 }}
+            /> */}
             <FormControlLabel
               control={
                 <Switch
                   checked={showOnlyPaid}
                   onChange={(e) => handleToggleChange(e.target.checked)}
-                  color="success"
+                  color="info"
                 />
               }
               label={
@@ -103,7 +107,7 @@ export default function Leaderboard({
                   variant="body2"
                   sx={{
                     fontWeight: 700,
-                    color: showOnlyPaid ? "success.main" : "text.secondary",
+                    color: showOnlyPaid ? "info.main" : "text.secondary",
                   }}
                 >
                   PRO POOL ONLY

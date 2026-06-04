@@ -1,9 +1,12 @@
 "use client";
 
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   Alert,
+  alpha,
   Box,
   Button,
+  Collapse,
   Container,
   Paper,
   Step,
@@ -56,6 +59,8 @@ export default function PredictorPage({
   const router = useRouter();
 
   const [activeStep, setActiveStep] = useState(0);
+  const [showScoreInfo, setShowScoreInfo] = useState(false);
+
   const [matches, setMatches] = useState<Match[]>(initialMatches);
 
   const [standings, setStandings] =
@@ -377,13 +382,63 @@ export default function PredictorPage({
         )}
         {activeStep === 1 && (
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
-              Third Place Predictions
-            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                my: 2,
+              }}
+            >
+              <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                Third Place Predictions
+              </Typography>
+              <Button
+                size="small"
+                onClick={() => setShowScoreInfo(!showScoreInfo)}
+                sx={{
+                  // fontSize: "0.75rem",
+                  textTransform: "none",
+                  fontWeight: 600,
+                }}
+              >
+                <InfoOutlinedIcon />
+              </Button>
+            </Box>
+            <Collapse in={showScoreInfo}>
+              <Box
+                sx={{
+                  p: 1.5,
+                  mb: 1,
+                  bgcolor: (theme) => alpha(theme.palette.primary.main, 0.05),
+                  borderRadius: 2,
+                  border: 1,
+                  borderColor: (theme) =>
+                    alpha(theme.palette.primary.main, 0.1),
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ display: "block" }}
+                >
+                  • The new format for this World Cup introduces a Round of 32.
+                  The 8 best third-place teams from the Group Stage will move
+                  on.
+                  <br />•{" "}
+                  <strong>
+                    1 pt for each correctly picked Round of 32 team.
+                  </strong>{" "}
+                  All of your Group Winners and Runners-up are automatically
+                  considered part of your Round of 32 picks. Your last 8 spots
+                  will go to whichever third-place teams you decide.
+                </Typography>
+              </Box>
+            </Collapse>
             <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
               Select the <b>8 third-place teams</b> you believe will advance to
               the Round of 32. Current selection:{" "}
-              {advancingThirdPlaceIds.length} / 8
+              <strong>{advancingThirdPlaceIds.length} / 8</strong>
             </Alert>
           </Box>
         )}

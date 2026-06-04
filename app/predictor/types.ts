@@ -122,7 +122,8 @@ export interface ActualStandingsType {
   t_name_code: string;
 }
 
-export interface KnockoutData {
+export type KnockoutData = {
+  r32: Team[];
   r16: Team[];
   qf: Team[];
   sf: Team[];
@@ -130,7 +131,7 @@ export interface KnockoutData {
   champion: Team | null;
   runnerUp: Team | undefined;
   thirdPlaceMatch: Team[];
-}
+};
 
 export const calculateGroupStandings = (
   groupMatches: Match[],
