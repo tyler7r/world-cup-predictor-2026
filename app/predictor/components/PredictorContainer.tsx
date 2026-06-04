@@ -75,6 +75,7 @@ export default function PredictorPage({
 
   // --- NEW: Knockout State ---
   const [knockoutPicks, setKnockoutPicks] = useState<KnockoutData>({
+    r32: initialKnockouts?.r32 || [],
     r16: initialKnockouts?.r16 || [],
     qf: initialKnockouts?.qf || [],
     sf: initialKnockouts?.sf || [],
