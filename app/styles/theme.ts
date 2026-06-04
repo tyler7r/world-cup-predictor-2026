@@ -8,7 +8,7 @@ export const theme = createTheme({
       main: "rgba(38, 198, 218, 0.9)", // Toned-down, sleek cyan
       light: "rgba(38, 198, 218, 0.5)",
     },
-    info: {
+    warning: {
       main: "rgb(255, 215, 0)",
     },
     success: {

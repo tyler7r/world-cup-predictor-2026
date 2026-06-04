@@ -352,6 +352,7 @@ export default function KnockoutStep({
                   opacity: 1,
                   textTransform: "none",
                   height: "100%",
+                  cursor: "pointer",
                 }}
               >
                 <Box sx={{ position: "absolute", top: 4, right: 8 }}>

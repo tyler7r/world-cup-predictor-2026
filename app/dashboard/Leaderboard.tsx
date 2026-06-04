@@ -87,19 +87,15 @@ export default function Leaderboard({
             spacing={1}
           >
             <ElectricBoltIcon
-              color={showOnlyPaid ? "info" : "disabled"}
+              color={showOnlyPaid ? "warning" : "disabled"}
               sx={{ fontSize: 20 }}
             />
-            {/* <MonetizationOnRoundedIcon
-              color={showOnlyPaid ? "success" : "disabled"}
-              sx={{ fontSize: 20 }}
-            /> */}
             <FormControlLabel
               control={
                 <Switch
                   checked={showOnlyPaid}
                   onChange={(e) => handleToggleChange(e.target.checked)}
-                  color="info"
+                  color="warning"
                 />
               }
               label={
@@ -107,7 +103,7 @@ export default function Leaderboard({
                   variant="body2"
                   sx={{
                     fontWeight: 700,
-                    color: showOnlyPaid ? "info.main" : "text.secondary",
+                    color: showOnlyPaid ? "warning.main" : "text.secondary",
                   }}
                 >
                   PRO POOL ONLY
