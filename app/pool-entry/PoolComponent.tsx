@@ -14,17 +14,17 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 
-export default function PoolEntryPage({
-  totalPot,
-  participantCount,
-}: {
-  totalPot: number;
-  participantCount: number;
-}) {
+type PoolEntryProps = {
+  poolEntries: { count: number };
+};
+
+export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
   const theme = useTheme();
 
   // Chain Colors - Used exclusively for accents
   const chainGold = "#FFD700";
+
+  const totalPot = Number(poolEntries.count) * 10;
 
   // 50/50 Math
   const teamFund = (totalPot * 0.5).toFixed(2);
@@ -123,7 +123,7 @@ export default function PoolEntryPage({
           variant="body2"
           sx={{ color: "text.secondary", fontWeight: 500 }}
         >
-          Across {participantCount} verified entries
+          Across {poolEntries.count} verified entries
         </Typography>
       </Paper>
 
