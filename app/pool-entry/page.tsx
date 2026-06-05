@@ -1,6 +1,8 @@
 import { neon } from "@neondatabase/serverless";
 import PoolEntryPage from "./PoolComponent";
 
+export const dynamic = "force-dynamic";
+
 // Server-side fetch
 export default async function PoolContainer() {
   const sql = neon(process.env.DATABASE_URL!);
