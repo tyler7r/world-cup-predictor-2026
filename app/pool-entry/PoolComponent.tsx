@@ -294,8 +294,8 @@ export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
           variant="body1"
           sx={{ fontWeight: 800, mb: 1, color: "text.secondary" }}
         >
-          Make sure to include your email in the Venmo so I know who to add to
-          the pool!
+          Please use the following format on your Venmo, so I know who to add:
+          WCP-(your_email@blank.com)
         </Typography>
 
         <Stack
