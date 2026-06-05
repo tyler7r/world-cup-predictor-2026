@@ -17,3 +17,23 @@ export type PointsBreakdownType = {
   knockout: PointsEarnedType;
   tiebreakers: PointsEarnedType;
 };
+
+export type KnockoutStageName =
+  | "Round of 32"
+  | "Round of 16"
+  | "Quarter-finals"
+  | "Semi-finals"
+  | "Final"
+  | "3rd Place Final"
+  | "Champion"
+  | "Runner-up";
+
+export interface StagePointsRow {
+  // Coerced to number in application code, but typed defensively
+  // in case your DB driver returns numeric sums as strings.
+  points_earned: number;
+  stage: KnockoutStageName;
+}
+
+// The complete array type returned by the query
+export type KnockoutPointsSummary = StagePointsRow[];

@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  Alert,
   alpha,
   Box,
+  Divider,
   Grid,
   Paper,
   Table,
@@ -14,13 +16,17 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { Tiebreakers } from "../types";
+import { ActualTiebreakers, Tiebreakers } from "../types";
 
 type LockedTieBreakerProps = {
   data: Tiebreakers;
+  actualTiebreakers: ActualTiebreakers;
 };
 
-export default function LockedTieBreakerStep({ data }: LockedTieBreakerProps) {
+export default function LockedTieBreakerStep({
+  data,
+  actualTiebreakers,
+}: LockedTieBreakerProps) {
   // Historical data for the table
   const theme = useTheme();
 
@@ -30,6 +36,9 @@ export default function LockedTieBreakerStep({ data }: LockedTieBreakerProps) {
     { year: 2014, host: "Brazil", games: 64, goals: 171, yellow: 187, red: 8 },
   ];
 
+  const goalsCount =
+    Number(actualTiebreakers.away_goals) + Number(actualTiebreakers.home_goals);
+
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -37,6 +46,21 @@ export default function LockedTieBreakerStep({ data }: LockedTieBreakerProps) {
         use these tournament-wide totals to break the tie. Closest prediction
         wins!
       </Typography>
+      <Alert severity="info" sx={{ mb: 2 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ display: "block" }}
+        >
+          • <strong>Goals:</strong> exactly correct earns you 5 points, within 3
+          goals earns you 3 points
+          <br />• <strong>Yellow Cards:</strong> exactly correct earns you 5
+          points, within 3 yellow cards earns you 3 points
+          <br />• <strong>Red Cards:</strong> exactly correct earns you 3 points
+          <br />• If these still aren&apos;t enough to determine a winner I will
+          manually see who is closest on goals then yellow cards then red cards
+        </Typography>
+      </Alert>
 
       <Grid container spacing={2}>
         {/* Left Column: Historical Reference Table */}
@@ -105,7 +129,7 @@ export default function LockedTieBreakerStep({ data }: LockedTieBreakerProps) {
                 display: "block",
               }}
             >
-              Total Goals
+              Total Goals (Prediction | Actual)
             </Typography>
             <Box
               sx={{
@@ -124,6 +148,10 @@ export default function LockedTieBreakerStep({ data }: LockedTieBreakerProps) {
               <Typography variant="body2" sx={{ fontWeight: 700 }}>
                 {data.predicted_total_goals}
               </Typography>
+              <Divider flexItem orientation="vertical" />
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                {goalsCount}
+              </Typography>
             </Box>
             <Typography
               variant="caption"
@@ -135,7 +163,7 @@ export default function LockedTieBreakerStep({ data }: LockedTieBreakerProps) {
                 display: "block",
               }}
             >
-              Total Yellow Cards
+              Total Yellow Cards (Prediction | Actual)
             </Typography>
             <Box
               sx={{
@@ -154,6 +182,10 @@ export default function LockedTieBreakerStep({ data }: LockedTieBreakerProps) {
               <Typography variant="body2" sx={{ fontWeight: 700 }}>
                 {data.predicted_yellow_cards}
               </Typography>
+              <Divider flexItem orientation="vertical" />
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                {actualTiebreakers.yellow_cards}
+              </Typography>
             </Box>
             <Typography
               variant="caption"
@@ -165,7 +197,7 @@ export default function LockedTieBreakerStep({ data }: LockedTieBreakerProps) {
                 display: "block",
               }}
             >
-              Total Red Cards
+              Total Red Cards (Prediction | Actual)
             </Typography>
             <Box
               sx={{
@@ -182,7 +214,11 @@ export default function LockedTieBreakerStep({ data }: LockedTieBreakerProps) {
               }}
             >
               <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                {data.predicted_yellow_cards}
+                {data.predicted_red_cards}
+              </Typography>
+              <Divider flexItem orientation="vertical" />
+              <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                {actualTiebreakers.red_cards}
               </Typography>
             </Box>
           </Box>

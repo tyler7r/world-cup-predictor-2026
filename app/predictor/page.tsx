@@ -1,10 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import { neon } from "@neondatabase/serverless";
+import { KnockoutPointsSummary, KnockoutStageName } from "../dashboard/types";
 import PredictorPage from "./components/PredictorContainer";
 import LockedPredictorPage from "./locked-version/LockedContainer";
 import {
   ActualKnockoutTeams,
   ActualStandingsType,
+  ActualTiebreakers,
   KnockoutData,
   Match,
   StandingPredictions,
@@ -27,6 +29,8 @@ export default async function GroupStageStepContainer() {
     initialThirdPlaceChoices,
     knockoutRows,
     [tiebreakers],
+    pointsEarned,
+    actualTiebreakers,
   ] = await Promise.all([
     // Explicitly cast the query to Match[]
     sql`
@@ -171,6 +175,17 @@ WHERE stage NOT IN ('Group Stage - 1', 'Group Stage - 2', 'Group Stage - 3');
   SELECT predicted_total_goals, predicted_yellow_cards, predicted_red_cards FROM users WHERE id = ${userId} LIMIT 1` as unknown as Promise<
       Tiebreakers[]
     >,
+    sql`
+      SELECT SUM(points_earned) as points_earned, stage 
+      FROM prediction_knockouts 
+      WHERE user_id = ${userId} 
+      GROUP BY user_id, stage
+    ` as unknown as KnockoutPointsSummary,
+
+    sql`
+  SELECT SUM(home_goals_actual) as home_goals, SUM(away_goals_actual) as away_goals, SUM(yellow_cards) as yellow_cards, SUM(red_cards) as red_cards FROM matches WHERE status = 'Match Finished'` as unknown as Promise<
+      ActualTiebreakers[]
+    >,
   ]);
 
   const initialThirds: number[] = initialThirdPlaceChoices.map(
@@ -266,6 +281,14 @@ WHERE stage NOT IN ('Group Stage - 1', 'Group Stage - 2', 'Group Stage - 3');
     (row) => row.team_id,
   ) as number[];
 
+  const pointsByStage: Record<KnockoutStageName, number> = pointsEarned.reduce(
+    (acc, row) => {
+      acc[row.stage] = Number(row.points_earned) || 0; // Ensures strings become numbers safely
+      return acc;
+    },
+    {} as Record<KnockoutStageName, number>,
+  );
+
   const isLocked = new Date() > new Date(matches[0]?.kickoff_time);
 
   return isLocked ? (
@@ -279,6 +302,8 @@ WHERE stage NOT IN ('Group Stage - 1', 'Group Stage - 2', 'Group Stage - 3');
       actualStandings={actualStandings}
       actualKnockoutTeams={actualKnockoutTeams}
       actualEliminatedTeamIds={actualEliminatedTeamIds}
+      pointsEarned={pointsByStage}
+      actualTiebreakers={actualTiebreakers[0]}
     />
   ) : (
     <PredictorPage

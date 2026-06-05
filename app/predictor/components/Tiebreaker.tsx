@@ -55,6 +55,21 @@ export default function TieBreakerStep({
         use these tournament-wide totals to break the tie. Closest prediction
         wins!
       </Typography>
+      <Alert severity="info" sx={{ mb: 2 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ display: "block" }}
+        >
+          • <strong>Goals:</strong> exactly correct earns you 5 points, within 3
+          goals earns you 3 points
+          <br />• <strong>Yellow Cards:</strong> exactly correct earns you 5
+          points, within 3 yellow cards earns you 3 points
+          <br />• <strong>Red Cards:</strong> exactly correct earns you 3 points
+          <br />• If these still aren&apos;t enough to determine a winner I will
+          manually see who is closest on goals then yellow cards then red cards
+        </Typography>
+      </Alert>
 
       <Alert severity="warning" sx={{ mb: 2 }}>
         <AlertTitle>
