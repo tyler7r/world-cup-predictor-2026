@@ -290,6 +290,14 @@ export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
           Support Chain Lightning. Win some cash.
         </Typography>
 
+        <Typography
+          variant="body1"
+          sx={{ fontWeight: 800, mb: 1, color: "text.secondary" }}
+        >
+          Make sure to include your email in the Venmo so I know who to add to
+          the pool!
+        </Typography>
+
         <Stack
           sx={{
             display: "flex",
