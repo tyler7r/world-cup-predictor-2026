@@ -1,6 +1,5 @@
 "use client";
 
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   Alert,
   alpha,
@@ -14,7 +13,6 @@ import {
   Stepper,
   Typography,
 } from "@mui/material";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { pruneGhostPicks } from "../helpers";
 import {
@@ -25,6 +23,7 @@ import {
   Team,
   Tiebreakers,
 } from "../types"; // <-- ADD 'Team'
+import PredictorComplete from "./CompletedPredictor";
 import GroupStageStep from "./GroupStageComponents/GroupStageStep";
 import KnockoutStep from "./KnockoutStep";
 import ThirdPlaceStep from "./ThirdPlaceStep";
@@ -56,7 +55,7 @@ export default function PredictorPage({
   initialTiebreakers,
   isLocked,
 }: PredictorPageProps) {
-  const router = useRouter();
+  // const router = useRouter();
 
   const [activeStep, setActiveStep] = useState(0);
   const [showScoreInfo, setShowScoreInfo] = useState(false);
@@ -259,7 +258,7 @@ export default function PredictorPage({
 
   const handleKnockoutComplete = async (moveToTiebreakers: boolean) => {
     const knockoutpickIds = {
-      r32: knockoutPicks.r32.map((p) => p.id) || [],
+      r32: allR32Teams || [],
       r16: knockoutPicks.r16.map((p) => p.id) || [],
       qf: knockoutPicks.qf.map((p) => p.id) || [],
       sf: knockoutPicks.sf.map((p) => p.id) || [],
@@ -351,7 +350,7 @@ export default function PredictorPage({
       }
 
       // Call your final API route here to save everything!
-      const success = await fetch("/api/predictions/tiebreakers", {
+      await fetch("/api/predictions/tiebreakers", {
         method: "POST",
         body: JSON.stringify({
           goals: tieBreakers.totalGoals,
@@ -359,9 +358,6 @@ export default function PredictorPage({
           redCards: tieBreakers.totalRedCards,
         }),
       });
-      if (success.ok) {
-        void router.push("/pool-entry");
-      }
     }
     setActiveStep((prev) => prev + 1);
   };
@@ -378,9 +374,22 @@ export default function PredictorPage({
 
       <Box>
         {activeStep === 0 && (
-          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2 }}>
-            Group Stage Predictions
-          </Typography>
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              mb: 2,
+            }}
+          >
+            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1 }}>
+              Group Stage Predictions
+            </Typography>
+            <Alert severity="info">
+              Predict the scores and final standings for each of the 12 groups!
+            </Alert>
+          </Box>
         )}
         {activeStep === 1 && (
           <Box>
@@ -388,8 +397,9 @@ export default function PredictorPage({
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
-                my: 2,
+                alignItems: { xs: "flex-start", sm: "center" },
+                flexDirection: { xs: "column", sm: "row" },
+                my: 1,
               }}
             >
               <Typography variant="h5" sx={{ fontWeight: "bold" }}>
@@ -404,7 +414,8 @@ export default function PredictorPage({
                   fontWeight: 600,
                 }}
               >
-                <InfoOutlinedIcon />
+                {/* <InfoOutlinedIcon /> */}
+                {showScoreInfo ? "Hide scoring" : "How scoring works"}
               </Button>
             </Box>
             <Collapse in={showScoreInfo}>
@@ -433,7 +444,8 @@ export default function PredictorPage({
                   </strong>{" "}
                   All of your Group Winners and Runners-up are automatically
                   considered part of your Round of 32 picks. Your last 8 spots
-                  will go to whichever third-place teams you decide.
+                  will go to whichever third-place teams you decide will move
+                  on. They don&apos;t have to match your standings picks.
                 </Typography>
               </Box>
             </Collapse>
@@ -492,19 +504,21 @@ export default function PredictorPage({
             onChange={handleTieBreakerChange}
           />
         )}
+        {activeStep === 4 && <PredictorComplete />}
       </Paper>
-
-      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-        <Button
-          disabled={activeStep === 0}
-          onClick={() => setActiveStep((s) => s - 1)}
-        >
-          Back
-        </Button>
-        <Button variant="contained" onClick={handleNext}>
-          {activeStep === steps.length - 1 ? "Save All" : "Next"}
-        </Button>
-      </Box>
+      {activeStep < 4 && (
+        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
+          <Button
+            disabled={activeStep === 0}
+            onClick={() => setActiveStep((s) => s - 1)}
+          >
+            Back
+          </Button>
+          <Button variant="contained" onClick={handleNext}>
+            {activeStep === steps.length - 1 ? "Save All" : "Next"}
+          </Button>
+        </Box>
+      )}
     </Container>
   );
 }

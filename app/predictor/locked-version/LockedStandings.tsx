@@ -14,6 +14,7 @@ type LockedStandingsProps = {
   standings: { id: number; flag: string; name: string; name_code: string };
   options: GroupStanding[];
   value: number | null | undefined;
+  allMatchesComplete: boolean;
 };
 
 export default function LockedStandings({
@@ -21,10 +22,11 @@ export default function LockedStandings({
   standings,
   options,
   value,
+  allMatchesComplete,
 }: LockedStandingsProps) {
   const selectedTeam = options.find((t) => t.teamId === value);
   const theme = useTheme();
-  return (
+  return allMatchesComplete ? (
     <Box sx={{ mb: 0.5 }}>
       <Typography
         variant="caption"
@@ -79,6 +81,58 @@ export default function LockedStandings({
             />
             <Typography variant="body2" sx={{ fontWeight: 700 }}>
               {standings.name}
+            </Typography>
+          </Box>
+        ) : (
+          <Typography variant="body2" color="text.disabled">
+            No selection
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  ) : (
+    <Box sx={{ mb: 0.5 }}>
+      <Typography
+        variant="caption"
+        sx={{
+          color: "text.secondary",
+          fontWeight: 600,
+          ml: 0.5,
+          mb: 0.5,
+          display: "block",
+        }}
+      >
+        {label.toUpperCase()} (Prediction)
+      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          p: "8.5px 14px", // Matches default MUI small input padding
+          bgcolor: (theme) =>
+            alpha(theme.palette.action.disabledBackground, 0.05),
+          borderRadius: 1,
+          border: 2,
+          borderColor: theme.palette.divider,
+        }}
+      >
+        {selectedTeam ? (
+          <Box
+            sx={{
+              display: "flex",
+              width: "100%",
+              gap: 1,
+              alignItems: "center",
+            }}
+          >
+            <Avatar
+              src={selectedTeam.flagUrl}
+              variant="rounded"
+              sx={{ width: 24, height: 18 }}
+            />
+            <Typography variant="body2" sx={{ fontWeight: 700 }}>
+              {selectedTeam.teamName}
             </Typography>
           </Box>
         ) : (

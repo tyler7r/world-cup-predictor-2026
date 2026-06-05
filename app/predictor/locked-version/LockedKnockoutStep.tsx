@@ -1,5 +1,6 @@
 "use client";
 
+import { KnockoutStageName } from "@/app/dashboard/types";
 import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import PendingRoundedIcon from "@mui/icons-material/PendingRounded";
@@ -29,26 +30,53 @@ interface LockedKnockoutStepProps {
   initialKnockouts: KnockoutData;
   picks: KnockoutData;
   actualKnockoutTeams: ActualKnockoutTeams[];
-  actualEliminatedTeamIds: number[]; // <-- NEW PROP
+  actualEliminatedTeamIds: number[];
+  pointsEarned: Record<KnockoutStageName, number>;
 }
 
 const STAGES = [
-  { label: "R32", abrv: "R32", targetStage: "Round of 32", score: 1 },
-  { label: "R16", abrv: "R16", targetStage: "Round of 16", score: 2 },
+  {
+    label: "R32",
+    abrv: "R32",
+    targetStage: "Round of 32",
+    score: 1,
+    number: 0,
+  },
+  {
+    label: "R16",
+    abrv: "R16",
+    targetStage: "Round of 16",
+    score: 2,
+    number: 1,
+  },
   {
     label: "Quarter-finals",
     abrv: "QF",
     targetStage: "Quarter-finals",
     score: 3,
+    number: 2,
   },
-  { label: "Semi-finals", abrv: "SF", targetStage: "Semi-finals", score: 4 },
+  {
+    label: "Semi-finals",
+    abrv: "SF",
+    targetStage: "Semi-finals",
+    score: 4,
+    number: 3,
+  },
   {
     label: "Finals & 3rd Place",
     abrv: "Finals",
     targetStage: "Mixed",
     score: 3,
+    number: 4,
   },
-  { label: "Champion", abrv: "Champ", targetStage: "Champion", score: 7 },
+  {
+    label: "Champion",
+    abrv: "Champ",
+    targetStage: "Champion",
+    score: 7,
+    number: 5,
+  },
 ];
 
 export default function LockedKnockoutStep({
@@ -57,7 +85,7 @@ export default function LockedKnockoutStep({
   selectedThirdPlaceIds,
   picks,
   actualKnockoutTeams,
-  actualEliminatedTeamIds,
+  pointsEarned,
 }: LockedKnockoutStepProps) {
   const [activeTab, setActiveTab] = useState(0);
   const theme = useTheme();
@@ -114,18 +142,27 @@ export default function LockedKnockoutStep({
     teamId: number,
     targetStage: string,
   ): "correct" | "incorrect" | "pending" => {
+    // Explicit sizing map to prevent array lookup errors during multi-stage layouts
+    const STAGE_SIZES: Record<string, number> = {
+      "Round of 32": 32,
+      "Round of 16": 16,
+      "Quarter-finals": 8,
+      "Semi-finals": 4,
+      Final: 2,
+      "3rd Place Final": 2,
+      Champion: 1,
+    };
+
     const actualTeams =
-      actualTeamsByStage[targetStage as keyof typeof actualTeamsByStage];
+      actualTeamsByStage[targetStage as keyof typeof actualTeamsByStage] || [];
+    const expectedSize = STAGE_SIZES[targetStage] || 0;
 
-    // A. Did they make it to the target stage?
-    if (actualTeams && actualTeams.includes(teamId)) return "correct";
+    // A. CASE: The stage has been completely filled/concluded in reality
+    if (actualTeams.length === expectedSize) {
+      return actualTeams.includes(teamId) ? "correct" : "incorrect";
+    }
 
-    // B. Are they completely eliminated and sent home from the tournament?
-    if (actualEliminatedTeamIds.includes(teamId)) return "incorrect";
-
-    // C. Special Cases for late stages:
-    // If we picked them for Final/Champ, but they lost in the SF, they go to the 3rd place match.
-    // They aren't in `actualEliminatedTeamIds` yet, but they are definitively out of the Final.
+    // Rule 2: If picked for Final or Champ, but lost in the Semi-finals
     if (targetStage === "Final" || targetStage === "Champion") {
       const sfLosers = actualKnockoutTeams
         .filter(
@@ -135,11 +172,22 @@ export default function LockedKnockoutStep({
       if (sfLosers.includes(teamId)) return "incorrect";
     }
 
+    // Rule 3: If picked to be Champion, but lost the Final
     if (targetStage === "Champion") {
       const finalLosers = actualKnockoutTeams
         .filter((m) => m.stage === "Final" && m.status === "Match Finished")
         .map((m) => m.loser_team_id);
       if (finalLosers.includes(teamId)) return "incorrect";
+    }
+
+    // Rule 4: If picked for 3rd Place Match, but won their Semi-final (advancing to the main Final)
+    if (targetStage === "3rd Place Final") {
+      const sfWinners = actualKnockoutTeams
+        .filter(
+          (m) => m.stage === "Semi-finals" && m.status === "Match Finished",
+        )
+        .map((m) => m.winner_team_id);
+      if (sfWinners.includes(teamId)) return "incorrect";
     }
 
     return "pending";
@@ -154,131 +202,156 @@ export default function LockedKnockoutStep({
     const picksToRender = roundOf32Pool.filter((p) =>
       teamIds.includes(p.team.id),
     );
+    const pointsE =
+      targetStage === "Champion"
+        ? pointsEarned["Winner" as keyof typeof pointsEarned]
+        : pointsEarned[targetStage as keyof typeof pointsEarned];
 
     return (
-      <Grid container spacing={2} sx={{ px: 2, pb: 2 }}>
-        {picksToRender.map(({ team, label }) => {
-          const status = getPickStatus(team.id, targetStage);
-
-          const isCorrect = status === "correct";
-          const isIncorrect = status === "incorrect";
-
-          const borderColor = isCorrect
-            ? "success.main"
-            : isIncorrect
-              ? "error.main"
-              : "divider";
-          const bgColor = isCorrect
-            ? alpha(theme.palette.success.main, 0.05)
-            : isIncorrect
-              ? alpha(theme.palette.error.main, 0.05)
-              : "background.paper";
-
-          return (
-            <Grid size={{ xs: 6, sm: 4, md: 3 }} key={team.id}>
-              <Paper
-                variant="outlined"
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  borderColor: borderColor,
-                  bgcolor: bgColor,
-                  position: "relative",
-                  overflow: "hidden",
-                  transition: "0.2s",
-                  borderWidth: isCorrect || isIncorrect ? 2 : 1,
-                  opacity: isIncorrect ? 0.7 : 1,
-                }}
-              >
-                <Box sx={{ position: "absolute", top: 4, right: 8 }}>
-                  {isCorrect && (
-                    <Box sx={{ display: "flex", flexDirection: "column" }}>
-                      <CheckCircleRoundedIcon
-                        color="success"
-                        sx={{ fontSize: 18 }}
-                      />
-                      <Typography
-                        variant="caption"
-                        sx={{ fontWeight: "bold", color: "text.secondary" }}
-                      >
-                        +{score}
-                      </Typography>
-                    </Box>
-                  )}
-                  {isIncorrect && (
-                    <CancelRoundedIcon color="error" sx={{ fontSize: 18 }} />
-                  )}
-                  {status === "pending" && (
-                    <PendingRoundedIcon
-                      color="disabled"
-                      sx={{ fontSize: 18, opacity: 0.5 }}
-                    />
-                  )}
-                </Box>
-
-                <Box
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box sx={{ px: 2, display: "flex", justifyContent: "flex-start" }}>
+          <Typography
+            variant="body1"
+            sx={{
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
+              color: "primary.main",
+              border: 1,
+              borderColor: (theme) => alpha(theme.palette.primary.main, 0.3),
+              px: 2,
+              py: 0.75,
+              borderRadius: 2,
+              fontWeight: 700,
+              letterSpacing: 0.5,
+            }}
+          >
+            POINTS EARNED: {pointsE}
+          </Typography>
+        </Box>
+        <Grid container spacing={2} sx={{ px: 2, pb: 2 }}>
+          {picksToRender.map(({ team, label }) => {
+            const status = getPickStatus(team.id, targetStage);
+            const isCorrect = status === "correct";
+            const isIncorrect = status === "incorrect";
+            const borderColor = isCorrect
+              ? "success.main"
+              : isIncorrect
+                ? "error.main"
+                : "divider";
+            const bgColor = isCorrect
+              ? alpha(theme.palette.success.main, 0.05)
+              : isIncorrect
+                ? alpha(theme.palette.error.main, 0.05)
+                : "background.paper";
+            return (
+              <Grid size={{ xs: 6, sm: 4, md: 3 }} key={team.id}>
+                <Paper
+                  variant="outlined"
                   sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    p: 1,
-                    gap: 1,
-                    mr: 2,
-                  }}
-                >
-                  <Avatar
-                    src={team.flag_url}
-                    variant="rounded"
-                    sx={{ width: 48, height: 32, boxShadow: 1 }}
-                  />
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontWeight: 800,
-                      textAlign: "center",
-                      textDecoration: isIncorrect ? "line-through" : "none",
-                    }}
-                  >
-                    {team.name_code}
-                  </Typography>
-                </Box>
-
-                <Box
-                  sx={{
-                    bgcolor: isCorrect
-                      ? alpha(theme.palette.success.main, 0.1)
-                      : isIncorrect
-                        ? alpha(theme.palette.error.main, 0.1)
-                        : theme.palette.divider,
                     width: "100%",
                     display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    py: 0.75,
+                    flexDirection: "column",
+                    borderColor: borderColor,
+                    bgcolor: bgColor,
+                    position: "relative",
+                    overflow: "hidden",
+                    transition: "0.2s",
+                    borderWidth: isCorrect || isIncorrect ? 2 : 1,
+                    opacity: isIncorrect ? 0.7 : 1,
                   }}
                 >
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
+                  <Box sx={{ position: "absolute", top: 4, right: 8 }}>
+                    {isCorrect && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
+                      >
+                        <CheckCircleRoundedIcon
+                          color="success"
+                          sx={{ fontSize: 18 }}
+                        />
+                        <Typography
+                          variant="caption"
+                          sx={{ fontWeight: "bold", color: "text.secondary" }}
+                        >
+                          +{score}
+                        </Typography>
+                      </Box>
+                    )}
+                    {isIncorrect && (
+                      <CancelRoundedIcon color="error" sx={{ fontSize: 18 }} />
+                    )}
+                    {status === "pending" && (
+                      <PendingRoundedIcon
+                        color="disabled"
+                        sx={{ fontSize: 18, opacity: 0.5 }}
+                      />
+                    )}
+                  </Box>
+                  <Box
                     sx={{
-                      fontWeight: 700,
-                      fontSize: "0.7rem",
                       display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      p: 1,
                       gap: 1,
+                      mr: 2,
                     }}
                   >
-                    <span>{label}</span>
-                    <span>•</span>
-                    <span>Rank #{team.rank}</span>
-                  </Typography>
-                </Box>
-              </Paper>
-            </Grid>
-          );
-        })}
-      </Grid>
+                    <Avatar
+                      src={team.flag_url}
+                      variant="rounded"
+                      sx={{ width: 48, height: 32, boxShadow: 1 }}
+                    />
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontWeight: 800,
+                        textAlign: "center",
+                        textDecoration: isIncorrect ? "line-through" : "none",
+                      }}
+                    >
+                      {team.name_code}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      bgcolor: isCorrect
+                        ? alpha(theme.palette.success.main, 0.1)
+                        : isIncorrect
+                          ? alpha(theme.palette.error.main, 0.1)
+                          : theme.palette.divider,
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      py: 0.75,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: "0.7rem",
+                        display: "flex",
+                        gap: 1,
+                      }}
+                    >
+                      <span>{label}</span>
+                      <span>•</span>
+                      <span>Rank #{team.rank}</span>
+                    </Typography>
+                  </Box>
+                </Paper>
+              </Grid>
+            );
+          })}
+        </Grid>
+      </Box>
     );
   };
 
@@ -343,7 +416,6 @@ export default function LockedKnockoutStep({
               Predicted 3rd Place Match
             </Typography>
             {renderGrid(
-              // The 3rd place teams are implicitly the 2 teams in the SF that were NOT put in the Final
               picks.sf
                 .filter((sf) => !picks.final.find((f) => f.id === sf.id))
                 .map((p) => p.id),

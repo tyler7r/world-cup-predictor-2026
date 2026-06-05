@@ -1,8 +1,13 @@
+import {
+  KnockoutPointsSummary,
+  KnockoutStageName,
+} from "@/app/dashboard/types";
 import { neon } from "@neondatabase/serverless";
 import LockedPredictorPage from "../locked-version/LockedContainer";
 import {
   ActualKnockoutTeams,
   ActualStandingsType,
+  ActualTiebreakers,
   KnockoutData,
   Match,
   StandingPredictions,
@@ -34,6 +39,8 @@ export default async function GroupStageStepContainer({
     knockoutRows,
     tiebreakersResult,
     userData,
+    pointsEarned,
+    actualTiebreakers,
   ] = await Promise.all([
     sql`
       SELECT 
@@ -60,7 +67,7 @@ export default async function GroupStageStepContainer({
       SELECT loser_team_id as team_id 
       FROM matches 
       WHERE stage IN ('Round of 32', 'Round of 16', 'Quarter-finals') 
-      AND status = 'finished' AND loser_team_id IS NOT NULL
+      AND status = 'Match Finished' AND loser_team_id IS NOT NULL
       UNION
       SELECT t.id as team_id FROM teams t JOIN standings s ON t.group_name = s.group_name
       WHERE s.winner_team_id IS NOT NULL 
@@ -109,7 +116,30 @@ export default async function GroupStageStepContainer({
     sql`SELECT * FROM users WHERE id = ${userId} LIMIT 1` as unknown as Promise<
       UserType[]
     >,
+
+    sql`
+  SELECT SUM(points_earned) as points_earned, stage 
+  FROM prediction_knockouts 
+  WHERE user_id = ${userId} 
+  GROUP BY user_id, stage
+` as unknown as KnockoutPointsSummary,
+    sql`
+  SELECT SUM(home_goals_actual) as home_goals, SUM(away_goals_actual) as away_goals, SUM(yellow_cards) as yellow_cards, SUM(red_cards) as red_cards FROM matches WHERE status = 'Match Finished'` as unknown as Promise<
+      ActualTiebreakers[]
+    >,
   ]);
+
+  // Transform the array row data into a clean dictionary map
+  const pointsByStage: Record<KnockoutStageName, number> = pointsEarned.reduce(
+    (acc, row) => {
+      acc[row.stage] = Number(row.points_earned) || 0; // Ensures strings become numbers safely
+      return acc;
+    },
+    {} as Record<KnockoutStageName, number>,
+  );
+
+  // Example Output:
+  // { "Round of 32": 16, "Round of 16": 8, "Quarter-finals": 0, ... }
 
   // Data processing remains identical, but happens instantly after the parallel fetch
   const actualEliminatedTeamIds = eliminatedTeamsQuery.map(
@@ -217,6 +247,8 @@ export default async function GroupStageStepContainer({
       actualKnockoutTeams={actualKnockoutTeams}
       actualEliminatedTeamIds={actualEliminatedTeamIds}
       userData={userData[0]}
+      pointsEarned={pointsByStage}
+      actualTiebreakers={actualTiebreakers[0]}
     />
   );
 }

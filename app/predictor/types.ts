@@ -133,6 +133,13 @@ export type KnockoutData = {
   thirdPlaceMatch: Team[];
 };
 
+export type ActualTiebreakers = {
+  home_goals: number;
+  away_goals: number;
+  yellow_cards: number;
+  red_cards: number;
+};
+
 export const calculateGroupStandings = (
   groupMatches: Match[],
 ): GroupStanding[] => {

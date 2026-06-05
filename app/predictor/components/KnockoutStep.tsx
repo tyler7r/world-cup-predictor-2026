@@ -322,8 +322,9 @@ export default function KnockoutStep({
         {roundScoreMatrix[subStep].description}
       </Alert>
 
-      <ReferenceBracket currentStage={roundScoreMatrix[subStep].round} />
-
+      {subStep < 4 && (
+        <ReferenceBracket currentStage={roundScoreMatrix[subStep].round} />
+      )}
       <Grid container spacing={2} sx={{ mb: 2 }}>
         {currentPool.map(({ team, label }) => {
           const isSelected = currentSelections.includes(team.id);

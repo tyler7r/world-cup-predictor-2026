@@ -12,6 +12,11 @@ export async function POST(request: Request) {
       // 1. Clear old knockout picks for this user
       sql`DELETE FROM prediction_knockouts WHERE user_id = ${userId}`,
 
+      ...picks.r32.map(
+        (id: number) =>
+          sql`INSERT INTO prediction_knockouts (user_id, team_id, stage) VALUES (${userId}, ${id}, 'Round of 32')`,
+      ),
+
       // 2. Insert R16 (16 teams)
       ...picks.r16.map(
         (id: number) =>

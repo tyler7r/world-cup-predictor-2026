@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import {
   Box,
@@ -46,6 +47,9 @@ export default function LockedGroupStageStep({
   const filteredMatches = matches.filter(
     (m) => m.group_name === currentGroupName && m.stage.includes("Group Stage"),
   );
+
+  const allMatchesCompleted =
+    filteredMatches.filter((m) => m.status === "Match Finished").length === 6;
 
   const filteredStandings = standings.find(
     (s) => s.group_name === currentGroupName,
@@ -271,6 +275,7 @@ export default function LockedGroupStageStep({
               flag: filteredActualStandings!.w_flag,
               name_code: filteredActualStandings!.w_name_code,
             }}
+            allMatchesComplete={allMatchesCompleted}
           />
           <LockedStandings
             label="Runner Up"
@@ -282,6 +287,7 @@ export default function LockedGroupStageStep({
               flag: filteredActualStandings!.r_flag,
               name_code: filteredActualStandings!.r_name_code,
             }}
+            allMatchesComplete={allMatchesCompleted}
           />
           <LockedStandings
             label="Third Place"
@@ -293,7 +299,36 @@ export default function LockedGroupStageStep({
               flag: filteredActualStandings!.t_flag,
               name_code: filteredActualStandings!.t_name_code,
             }}
+            allMatchesComplete={allMatchesCompleted}
           />
+        </Box>
+        <Box sx={{ width: "100%", display: "flex" }}>
+          {activeTab > 0 && (
+            <Button
+              startIcon={<ArrowBackIos />}
+              onClick={() => setActiveTab((prev) => prev - 1)}
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "flex-start",
+              }}
+            >
+              Group {groups[activeTab - 1]}
+            </Button>
+          )}
+          {activeTab < 11 && (
+            <Button
+              endIcon={<ArrowForwardIos />}
+              onClick={() => setActiveTab((prev) => prev + 1)}
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              Group {groups[activeTab + 1]}
+            </Button>
+          )}
         </Box>
       </Box>
       <Fab

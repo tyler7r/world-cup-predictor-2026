@@ -1,5 +1,6 @@
 "use client";
 
+import { KnockoutStageName } from "@/app/dashboard/types";
 import {
   Box,
   Button,
@@ -16,6 +17,7 @@ import { useState } from "react";
 import {
   ActualKnockoutTeams,
   ActualStandingsType,
+  ActualTiebreakers,
   KnockoutData,
   Match,
   StandingPredictions,
@@ -39,6 +41,8 @@ type LockedPredictorPageProps = {
   actualKnockoutTeams: ActualKnockoutTeams[];
   actualEliminatedTeamIds: number[];
   userData?: UserType;
+  pointsEarned: Record<KnockoutStageName, number>;
+  actualTiebreakers: ActualTiebreakers;
 };
 
 export default function LockedPredictorPage({
@@ -52,6 +56,8 @@ export default function LockedPredictorPage({
   actualKnockoutTeams,
   actualEliminatedTeamIds,
   userData,
+  pointsEarned,
+  actualTiebreakers,
 }: LockedPredictorPageProps) {
   const router = useRouter();
   const theme = useTheme();
@@ -136,9 +142,15 @@ export default function LockedPredictorPage({
             picks={initialKnockouts}
             actualKnockoutTeams={actualKnockoutTeams}
             actualEliminatedTeamIds={actualEliminatedTeamIds}
+            pointsEarned={pointsEarned}
           />
         )}
-        {activeStep === 2 && <LockedTieBreakerStep data={initialTiebreakers} />}
+        {activeStep === 2 && (
+          <LockedTieBreakerStep
+            data={initialTiebreakers}
+            actualTiebreakers={actualTiebreakers}
+          />
+        )}
       </Paper>
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
