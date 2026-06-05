@@ -7,6 +7,7 @@ import {
   EmojiEventsRounded as TrophyIcon,
   VpnKeyRounded as VpnKeyIcon,
 } from "@mui/icons-material";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {
   Alert,
   Box,
@@ -26,6 +27,7 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { nanoid } from "nanoid";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import GroupMatch from "../predictor/components/GroupStageComponents/GroupMatch";
 import { Match } from "../predictor/types";
@@ -64,6 +66,7 @@ export default function DashboardClient({
   const [joinError, setJoinError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const handlePwdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPwd(e.target.value.toUpperCase());
@@ -107,6 +110,24 @@ export default function DashboardClient({
         pb: 8,
       }}
     >
+      <Button
+        onClick={() => void router.push("/predictor")}
+        endIcon={<ArrowForwardIcon />}
+        variant="contained"
+        size="large"
+        sx={{
+          flex: 1,
+          py: 1,
+          fontWeight: 700,
+          borderRadius: 2,
+          // color: "black",
+          "&:hover": {
+            bgcolor: alpha(theme.palette.primary.main, 0.8),
+          },
+        }}
+      >
+        Fill out your predictor!
+      </Button>
       <PointsBreakdown
         breakdown={pointsBreakdown}
         lastUpdated={lastUpdated}
