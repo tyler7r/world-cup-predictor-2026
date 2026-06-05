@@ -14,10 +14,16 @@ export default async function RootPage() {
 
   // Case 1: User is logged in
   if (userId && user) {
+    const displayName =
+      user.fullName ||
+      (user.firstName
+        ? `${user.firstName} ${user.lastName || ""}`.trim()
+        : null) ||
+      user.emailAddresses[0].emailAddress.split("@")[0]; //
     // Upsert logic
     await sql`
       INSERT INTO users (id, email, display_name)
-      VALUES (${userId}, ${user.emailAddresses[0].emailAddress}, ${user.fullName})
+      VALUES (${userId}, ${user.emailAddresses[0].emailAddress}, ${displayName})
       ON CONFLICT (id) DO UPDATE SET 
         email = EXCLUDED.email, 
         display_name = EXCLUDED.display_name
