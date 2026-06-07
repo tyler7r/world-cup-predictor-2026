@@ -7,7 +7,12 @@ import {
   EmojiEventsRounded as TrophyIcon,
   VpnKeyRounded as VpnKeyIcon,
 } from "@mui/icons-material";
+import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
 import {
   Alert,
   Box,
@@ -15,11 +20,15 @@ import {
   Card,
   CardActionArea,
   CardContent,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Grid,
+  List,
+  ListItem,
+  Paper,
   Stack,
   TextField,
   Typography,
@@ -28,13 +37,17 @@ import {
 import { alpha } from "@mui/material/styles";
 import { nanoid } from "nanoid";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import GroupMatch from "../predictor/components/GroupStageComponents/GroupMatch";
 import { Match } from "../predictor/types";
 import Leaderboard from "./Leaderboard";
 import { LeagueDetails } from "./page";
 import PointsBreakdown from "./PointsBreakdown";
-import { LeaderboardEntry, PointsBreakdownType } from "./types";
+import {
+  LeaderboardEntry,
+  PointsBreakdownType,
+  PredictorStatusType,
+} from "./types";
 
 interface DashboardClientProps {
   leagues: LeagueDetails[];
@@ -44,6 +57,7 @@ interface DashboardClientProps {
   recentMatches: Match[];
   lastUpdated: { matches: string };
   maxAvailableGroupPoints: string;
+  predictorStatus: PredictorStatusType;
 }
 
 export default function DashboardClient({
@@ -54,8 +68,10 @@ export default function DashboardClient({
   recentMatches,
   lastUpdated,
   maxAvailableGroupPoints,
+  predictorStatus,
 }: DashboardClientProps) {
   const theme = useTheme();
+  const router = useRouter();
 
   // Modal Visibility States
   const [openCreate, setOpenCreate] = useState(false);
@@ -66,7 +82,98 @@ export default function DashboardClient({
   const [joinError, setJoinError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
+
+  // Status Bar Dropdown State
+  const [showMissing, setShowMissing] = useState(false);
+
+  // Predictor Status Evaluation
+  const { isComplete, missing } = useMemo(() => {
+    const missingItems: string[] = [];
+
+    if (predictorStatus.groupGames < 72) {
+      missingItems.push(
+        `Group Stage Matches (${predictorStatus.groupGames}/72)`,
+      );
+    }
+    if (predictorStatus.standings < 12) {
+      missingItems.push(`Group Standings (${predictorStatus.standings}/12)`);
+    }
+    if (predictorStatus.thirdPlace < 8) {
+      missingItems.push(
+        `3rd Place Advancers (${predictorStatus.thirdPlace}/8)`,
+      );
+    }
+
+    const expectedKnockouts: Record<string, number> = {
+      "Round of 32": 32,
+      "Round of 16": 16,
+      "Quarter-finals": 8,
+      "Semi-finals": 4,
+      Final: 2,
+      "3rd Place Final": 2,
+      "Runner-up": 1,
+      Winner: 1,
+    };
+
+    for (const [stage, expected] of Object.entries(expectedKnockouts)) {
+      const stageData = predictorStatus.knockouts.find(
+        (k) => k.stage === stage,
+      );
+      const count = stageData ? stageData.count : 0;
+      if (count < expected) {
+        missingItems.push(`Knockouts: ${stage} (${count}/${expected})`);
+      }
+    }
+
+    const tiebreakersComplete =
+      predictorStatus.tiebreakers.predicted_red_cards !== null &&
+      predictorStatus.tiebreakers.predicted_yellow_cards !== null &&
+      predictorStatus.tiebreakers.predicted_total_goals !== null;
+
+    if (!tiebreakersComplete) {
+      missingItems.push("Tiebreakers (Goals, Yellow Cards, Red Cards)");
+    }
+
+    return {
+      isComplete: missingItems.length === 0,
+      missing: missingItems,
+    };
+  }, [predictorStatus]);
+
+  // World Cup 2026 Kickoff Timer (June 11, 2026 @ 3:00 PM EDT)
+  const targetDate = useMemo(
+    () => new Date("2026-06-11T15:00:00-04:00").getTime(),
+    [],
+  );
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        clearInterval(interval);
+        return;
+      }
+
+      setTimeLeft({
+        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+        hours: Math.floor(
+          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+        ),
+        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((distance % (1000 * 60)) / 1000),
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [targetDate]);
 
   const handlePwdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPwd(e.target.value.toUpperCase());
@@ -82,7 +189,7 @@ export default function DashboardClient({
       setCreateError(result.error);
     } else {
       setOpenCreate(false);
-      setPwd(nanoid(6).toUpperCase()); // Reset password generator for next time
+      setPwd(nanoid(6).toUpperCase());
     }
   };
 
@@ -117,10 +224,9 @@ export default function DashboardClient({
         size="large"
         sx={{
           flex: 1,
-          py: 1,
-          fontWeight: 700,
+          py: 1.5,
+          fontWeight: 800,
           borderRadius: 2,
-          // color: "black",
           "&:hover": {
             bgcolor: alpha(theme.palette.primary.main, 0.8),
           },
@@ -128,6 +234,109 @@ export default function DashboardClient({
       >
         Fill out your predictor!
       </Button>
+
+      {/* Predictor Status Bar */}
+      <Paper
+        variant="outlined"
+        sx={{
+          p: 2,
+          borderRadius: 3,
+          bgcolor: isComplete
+            ? alpha(theme.palette.success.main, 0.05)
+            : alpha(theme.palette.warning.main, 0.05),
+          borderColor: isComplete ? "success.main" : "warning.main",
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 1,
+          }}
+        >
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+            {isComplete ? (
+              <CheckCircleRoundedIcon color="success" />
+            ) : (
+              <WarningRoundedIcon color="warning" />
+            )}
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: 800,
+                color: isComplete ? "success.main" : "warning.dark",
+              }}
+            >
+              Predictor Status: {isComplete ? "Complete" : "Incomplete"}
+            </Typography>
+          </Stack>
+
+          <Stack
+            direction="row"
+            spacing={0.5}
+            sx={{
+              bgcolor: "background.paper",
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 2,
+              border: 1,
+              borderColor: "divider",
+              alignItems: "center",
+            }}
+          >
+            <AccessTimeFilledIcon
+              color="action"
+              sx={{ fontSize: 18, color: "text.secondary" }}
+            />
+            <Typography
+              variant="caption"
+              sx={{ fontWeight: 800, color: "text.secondary" }}
+            >
+              LOCKS IN: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m{" "}
+              {timeLeft.seconds}s
+            </Typography>
+          </Stack>
+        </Box>
+
+        {!isComplete && (
+          <Box>
+            <Button
+              size="small"
+              onClick={() => setShowMissing(!showMissing)}
+              endIcon={showMissing ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              sx={{
+                color: "warning.dark",
+                fontWeight: 700,
+                mt: 0.5,
+                p: 0,
+                minWidth: "auto",
+              }}
+            >
+              View Missing Sections
+            </Button>
+            <Collapse in={showMissing}>
+              <List dense disablePadding sx={{ mt: 1 }}>
+                {missing.map((item, idx) => (
+                  <ListItem key={idx} disablePadding sx={{ py: 0.25 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary", fontWeight: 600 }}
+                    >
+                      • {item}
+                    </Typography>
+                  </ListItem>
+                ))}
+              </List>
+            </Collapse>
+          </Box>
+        )}
+      </Paper>
+
       <PointsBreakdown
         breakdown={pointsBreakdown}
         lastUpdated={lastUpdated}
@@ -309,7 +518,6 @@ export default function DashboardClient({
                 fullWidth
                 required
                 variant="outlined"
-                // slotProps={{ input: { sx: { borderRadius: 2 } } }}
               />
               <TextField
                 name="leaguePwd"
