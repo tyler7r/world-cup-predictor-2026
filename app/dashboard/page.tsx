@@ -8,6 +8,8 @@ import {
   LeaderboardEntry,
   PointsBreakdownType,
   PointsEarnedType,
+  PredictorStatusType,
+  UserType,
 } from "./types";
 
 export type LeagueDetails = {
@@ -67,6 +69,11 @@ export default async function DashboardPage() {
     tiebreakerPoints,
     maxAvailableGroupPoints,
     lastUpdatedTimes,
+    completedGroupGames,
+    completedGroupStandings,
+    completedThirdPlaceAdvancements,
+    completedKnockoutPicks,
+    completedTiebreakers,
   ] = await Promise.all([
     // 2. Fetch the user's leagues (including a count of total members)
     sql`
@@ -176,6 +183,40 @@ export default async function DashboardPage() {
     SELECT matches FROM last_updated` as unknown as Promise<
       { matches: string }[]
     >,
+
+    sql`
+    SELECT count(distinct match_id) as match_count FROM prediction_group_matches WHERE user_id = ${userId} AND home_goals_predicted is not null AND away_goals_predicted is not null` as unknown as Promise<
+      { match_count: number }[]
+    >,
+
+    sql`
+    SELECT count(distinct group_name) as count FROM prediction_group_standings WHERE user_id = ${userId} AND winner_team_id is not null AND runner_up_team_id is not null AND third_place_team_id is not null` as unknown as Promise<
+      { count: number }[]
+    >,
+
+    sql`
+    SELECT count(distinct id) as count FROM prediction_third_place_advancement WHERE user_id = ${userId} AND team_id is not null` as unknown as Promise<
+      { count: number }[]
+    >,
+
+    sql`
+    SELECT stage, count(*) as count FROM prediction_knockouts WHERE user_id = ${userId} AND team_id is not null GROUP BY stage` as unknown as Promise<
+      {
+        stage:
+          | "Round of 32"
+          | "Round of 16"
+          | "Quarter-finals"
+          | "Semi-finals"
+          | "Final"
+          | "3rd Place Final"
+          | "Runner-up"
+          | "Winner";
+        count: number;
+      }[]
+    >,
+
+    sql`
+    SELECT * FROM users WHERE id = ${userId}` as unknown as Promise<UserType[]>,
   ]);
 
   const pointsBreakdown: PointsBreakdownType = {
@@ -183,6 +224,14 @@ export default async function DashboardPage() {
     standings: standingsPoints[0],
     knockout: knockoutPoints[0],
     tiebreakers: tiebreakerPoints[0],
+  };
+
+  const predictorCompletionStatus: PredictorStatusType = {
+    groupGames: completedGroupGames[0].match_count,
+    standings: completedGroupStandings[0].count,
+    thirdPlace: completedThirdPlaceAdvancements[0].count,
+    knockouts: completedKnockoutPicks,
+    tiebreakers: completedTiebreakers[0],
   };
 
   return (
@@ -211,6 +260,7 @@ export default async function DashboardPage() {
         maxAvailableGroupPoints={
           maxAvailableGroupPoints[0].finished_match_count
         }
+        predictorStatus={predictorCompletionStatus}
       />
     </Container>
   );

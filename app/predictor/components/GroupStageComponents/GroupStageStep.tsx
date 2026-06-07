@@ -139,7 +139,7 @@ export default function GroupStageStep({
     value: string,
   ) => {
     const matchId = match.api_fixture_id;
-    const parsedValue = value === "" ? null : parseInt(value);
+    const parsedValue = value === "" ? null : Math.abs(parseInt(value));
 
     onScoreChange(matchId, team, parsedValue as number);
     await fetch("/api/predictions/match", {
