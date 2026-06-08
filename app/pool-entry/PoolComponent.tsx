@@ -312,6 +312,24 @@ export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
             variant="contained"
             fullWidth
             size="large"
+            startIcon={<CurrencyPoundIcon />}
+            href="https://www.paypal.com/paypalme/ChainLightning"
+            target="_blank"
+            color="primary"
+            sx={{
+              py: 1.5,
+              borderRadius: 2,
+              fontSize: "1.1rem",
+              fontWeight: 800,
+              // boxShadow: "0 4px 14px 0 rgba(0,140,255,0.39)",
+            }}
+          >
+            Buy In With Paypal
+          </Button>
+          <Button
+            variant="contained"
+            fullWidth
+            size="large"
             startIcon={<PaidIcon />}
             href="https://account.venmo.com/u/Tyler-Randall-11"
             target="_blank"
@@ -326,24 +344,6 @@ export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
             }}
           >
             Buy In With Venmo
-          </Button>
-          <Button
-            variant="contained"
-            fullWidth
-            size="large"
-            startIcon={<CurrencyPoundIcon />}
-            href="https://www.paypal.com/paypalme/ChainLightning"
-            target="_blank"
-            color="primary"
-            sx={{
-              py: 1.5,
-              borderRadius: 2,
-              fontSize: "1.1rem",
-              fontWeight: 800,
-              // boxShadow: "0 4px 14px 0 rgba(0,140,255,0.39)",
-            }}
-          >
-            Buy In With Paypal
           </Button>
         </Stack>
 
