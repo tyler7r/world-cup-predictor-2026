@@ -1,5 +1,6 @@
 "use client";
 
+import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import {
   Alert,
   alpha,
@@ -8,6 +9,7 @@ import {
   Collapse,
   Container,
   Paper,
+  Stack,
   Step,
   StepLabel,
   Stepper,
@@ -22,6 +24,7 @@ import {
   StandingPredictions,
   Team,
   Tiebreakers,
+  UserType,
 } from "../types"; // <-- ADD 'Team'
 import PredictorComplete from "./CompletedPredictor";
 import GroupStageStep from "./GroupStageComponents/GroupStageStep";
@@ -42,6 +45,7 @@ type PredictorPageProps = {
   actualStandings: ActualStandingsType[];
   initialTiebreakers: Tiebreakers;
   isLocked: boolean;
+  userData: UserType;
 };
 
 export default function PredictorPage({
@@ -54,6 +58,7 @@ export default function PredictorPage({
   actualStandings,
   initialTiebreakers,
   isLocked,
+  userData,
 }: PredictorPageProps) {
   // const router = useRouter();
 
@@ -91,6 +96,30 @@ export default function PredictorPage({
     ...poolRunnersup,
     ...advancingThirdPlaceIds,
   ];
+
+  const [showGuide, setShowGuide] = useState(userData.show_guide);
+
+  const handleDismissGuide = async (permanently: boolean) => {
+    setShowGuide(false);
+
+    if (permanently) {
+      // Async update database setting via API Route
+      await fetch("/api/user/settings", {
+        method: "POST",
+        body: JSON.stringify({ showGuide: false }),
+      });
+    }
+  };
+
+  const handleResetGuide = async () => {
+    setShowGuide(true);
+
+    // Async update database setting back to true
+    await fetch("/api/user/settings", {
+      method: "POST",
+      body: JSON.stringify({ showGuide: true }),
+    });
+  };
 
   const handleToggleThirdPlace = async (teamId: number) => {
     setAdvancingThirdPlaceIds((prev) =>
@@ -380,15 +409,99 @@ export default function PredictorPage({
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
+              alignItems: "flex-start",
               mb: 2,
             }}
           >
             <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1 }}>
               Group Stage Predictions
             </Typography>
-            <Alert severity="info">
-              Predict the scores and final standings for each of the 12 groups!
-            </Alert>
+            {!showGuide && (
+              <Button
+                size="small"
+                startIcon={<HelpOutlineOutlinedIcon sx={{ fontSize: 14 }} />}
+                onClick={handleResetGuide}
+                sx={{
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                  // color: "text.secondary",
+                  textTransform: "none",
+                }}
+                variant="outlined"
+                color="primary"
+              >
+                Show Page Guide
+              </Button>
+            )}
+            <Collapse in={showGuide}>
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 2.5,
+                  my: 1,
+                  borderRadius: 3,
+                  bgcolor: (theme) => alpha(theme.palette.primary.main, 0.02),
+                  borderColor: "primary.main",
+                  position: "relative",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 800, mb: 1, color: "primary.main" }}
+                >
+                  How to Fill Out Your Group Stage
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  Welcome! To complete your predictor bracket successfully,
+                  follow these steps for each group:
+                  <br />
+                  <br />
+                  1️⃣ <strong>Score Predictions:</strong> Type in your predicted
+                  scorelines for each match. Your changes will automatically
+                  update the live <em>Projected Standings</em> math table below!
+                  <br />
+                  2️⃣ <strong>Your Picks:</strong> Use the dropdown menus to lock
+                  in your official predictions for who finishes 1st, 2nd, and
+                  3rd.{" "}
+                  <em>
+                    Note: Your selections must be unique (no duplicate teams
+                    allowed) but they don&apos;t have to match your projected
+                    standings.
+                  </em>
+                  <br />
+                  3️⃣ <strong>Check the Tabs:</strong> Once a group is validly
+                  completed, a green checkmark will appear on its tab. Complete
+                  all 12 groups (A through L) to finish this phase!
+                </Typography>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ flexWrap: "wrap", gap: 1 }}
+                >
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleDismissGuide(false)}
+                    sx={{ fontWeight: 700, borderRadius: 1.5 }}
+                  >
+                    Got It
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    size="small"
+                    onClick={() => handleDismissGuide(true)}
+                    sx={{ fontWeight: 700, borderRadius: 1.5 }}
+                  >
+                    Don&apos;t Show This Again
+                  </Button>
+                </Stack>
+              </Paper>
+            </Collapse>
           </Box>
         )}
         {activeStep === 1 && (
@@ -476,6 +589,7 @@ export default function PredictorPage({
             onStandingChange={handleStandingSave}
             actualStandings={actualStandings}
             isLocked={isLocked}
+            initialShowGuide={userData.show_guide}
           />
         )}
         {activeStep === 1 && (

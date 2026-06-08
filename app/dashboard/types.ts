@@ -47,6 +47,7 @@ export type UserType = {
   predicted_red_cards: number | null;
   points_earned: number;
   entered_pool: boolean;
+  show_guide: boolean;
 };
 
 export type PredictorStatusType = {

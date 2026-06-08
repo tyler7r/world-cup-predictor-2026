@@ -32,6 +32,7 @@ export interface UserType {
   display_name: string;
   email: string;
   entered_pool: string;
+  show_guide: boolean;
 }
 
 export interface ActualKnockoutTeams {
