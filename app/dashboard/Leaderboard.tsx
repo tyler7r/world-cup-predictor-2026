@@ -117,23 +117,31 @@ export default function Leaderboard({
 
       <Paper variant="outlined" sx={{ borderRadius: 3, overflow: "hidden" }}>
         <TableContainer>
-          <Table>
+          {/* Added size="small" and tableLayout: "fixed" */}
+          <Table size="small" sx={{ tableLayout: "fixed", minWidth: "100%" }}>
             <TableHead sx={{ bgcolor: "action.hover" }}>
               <TableRow>
-                <TableCell width="10%">
+                {/* Explicit Widths and reduced mobile padding (xs: 0.5) */}
+                <TableCell sx={{ px: { xs: 1, sm: 2 }, width: "12%" }}>
                   <strong>#</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ px: { xs: 0.5, sm: 2 }, width: "36%" }}>
                   <strong>Player</strong>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ px: { xs: 0.5, sm: 2 }, width: "16%" }}>
                   <strong>Winner</strong>
                 </TableCell>
-                <TableCell align="left">
-                  <strong>Pro Pool?</strong>
+                <TableCell
+                  align="center"
+                  sx={{ px: { xs: 0.5, sm: 2 }, width: "16%" }}
+                >
+                  <strong>Pro?</strong>
                 </TableCell>
-                <TableCell align="right">
-                  <strong>Points</strong>
+                <TableCell
+                  align="right"
+                  sx={{ px: { xs: 1, sm: 2 }, width: "20%" }}
+                >
+                  <strong>Pts</strong>
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -159,19 +167,19 @@ export default function Leaderboard({
                         textTransform: "none",
                       }}
                     >
-                      <TableCell>
+                      <TableCell sx={{ px: { xs: 1, sm: 2 } }}>
                         <Typography
-                          variant="subtitle1"
+                          variant="subtitle2"
                           sx={{ fontWeight: 800 }}
                         >
                           {absoluteRank + 1}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ px: { xs: 0.5, sm: 2 } }}>
                         <Typography
                           component={Link}
                           href={`/predictor/${entry.user_id}`}
-                          variant="body1"
+                          variant="body2"
                           sx={{
                             fontWeight: 500,
                             textDecoration: "none",
@@ -179,29 +187,33 @@ export default function Leaderboard({
                             "&:hover": {
                               textDecoration: "underline",
                             },
+                            display: "block",
+                            wordBreak: "break-word", // Forces text to wrap onto next line
+                            lineHeight: 1.2,
+                            flexWrap: "wrap",
                           }}
                         >
                           {entry.display_name}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ px: { xs: 0.5, sm: 2 } }}>
                         <Avatar
                           variant="rounded"
                           src={entry.flag_url}
-                          sx={{ height: 28, width: 42 }}
+                          sx={{ height: 24, width: 36 }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell align="center" sx={{ px: { xs: 0.5, sm: 2 } }}>
                         {entry.entered_pool ? (
                           <Chip
                             label="YES"
                             color="success"
                             size="small"
                             sx={{
-                              fontSize: "0.65rem",
+                              fontSize: "0.60rem",
                               fontWeight: 900,
                               height: 20,
-                              px: 1,
+                              px: 0.5,
                             }}
                           />
                         ) : (
@@ -211,18 +223,18 @@ export default function Leaderboard({
                             variant="outlined"
                             size="small"
                             sx={{
-                              fontSize: "0.65rem",
+                              fontSize: "0.60rem",
                               fontWeight: 900,
                               height: 20,
-                              px: 1,
+                              px: 0.5,
                               opacity: 0.5,
                             }}
                           />
                         )}
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="right" sx={{ px: { xs: 1, sm: 2 } }}>
                         <Typography
-                          variant="h6"
+                          variant="subtitle1"
                           sx={{ fontWeight: 900, color: "primary.main" }}
                         >
                           {entry.total_points}
