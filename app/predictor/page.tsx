@@ -12,6 +12,7 @@ import {
   StandingPredictions,
   Team,
   Tiebreakers,
+  UserType,
 } from "./types";
 
 export default async function GroupStageStepContainer() {
@@ -31,6 +32,7 @@ export default async function GroupStageStepContainer() {
     [tiebreakers],
     pointsEarned,
     actualTiebreakers,
+    userData,
   ] = await Promise.all([
     // Explicitly cast the query to Match[]
     sql`
@@ -186,6 +188,9 @@ WHERE stage NOT IN ('Group Stage - 1', 'Group Stage - 2', 'Group Stage - 3');
   SELECT SUM(home_goals_actual) as home_goals, SUM(away_goals_actual) as away_goals, SUM(yellow_cards) as yellow_cards, SUM(red_cards) as red_cards FROM matches WHERE status = 'Match Finished'` as unknown as Promise<
       ActualTiebreakers[]
     >,
+
+    sql`
+    SELECT * FROM users WHERE id = ${userId}` as unknown as Promise<UserType[]>,
   ]);
 
   const initialThirds: number[] = initialThirdPlaceChoices.map(
@@ -316,6 +321,7 @@ WHERE stage NOT IN ('Group Stage - 1', 'Group Stage - 2', 'Group Stage - 3');
       actualStandings={actualStandings}
       initialTiebreakers={tiebreakers}
       isLocked={isLocked}
+      userData={userData[0]}
     />
   );
 }

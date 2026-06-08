@@ -107,8 +107,8 @@ export default function StandingSelector({
             color: "warning.main",
           }}
         >
-          <WarningAmberIcon sx={{ fontSize: "1rem" }} /> Mismatch with
-          calculated predictions
+          <WarningAmberIcon sx={{ fontSize: "1rem" }} /> Valid choice but
+          mismatch with calculated predictions
         </FormHelperText>
       )}
     </FormControl>

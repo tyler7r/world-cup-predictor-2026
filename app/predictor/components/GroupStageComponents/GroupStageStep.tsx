@@ -50,6 +50,7 @@ interface GroupStageStepProps {
   ) => void;
   isLocked: boolean;
   actualStandings: ActualStandingsType[];
+  initialShowGuide: boolean; // <-- New Prop fetched from the server
 }
 
 export default function GroupStageStep({
@@ -61,8 +62,8 @@ export default function GroupStageStep({
   isLocked,
 }: GroupStageStepProps) {
   const [activeTab, setActiveTab] = useState(0);
-  const [showScoreInfo, setShowScoreInfo] = useState(false); // <-- Add this
-  const [showPicksInfo, setShowPicksInfo] = useState(false); // <-- Add this
+  const [showScoreInfo, setShowScoreInfo] = useState(false);
+  const [showPicksInfo, setShowPicksInfo] = useState(false);
 
   const groups = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
   const currentGroupName = `${groups[activeTab]}`;
@@ -201,7 +202,6 @@ export default function GroupStageStep({
         scrollButtons={"auto"}
         value={activeTab}
         onChange={(_, v) => setActiveTab(v)}
-        // TabIndicatorProps={{ sx: { width: 3, borderRadius: "4px 0 0 4px" } }}
         sx={{
           borderRight: isDesktop ? 1 : 0,
           borderColor: "divider",
@@ -239,12 +239,12 @@ export default function GroupStageStep({
           pr: isDesktop ? 4 : 1,
         }}
       >
-        {/* Status Banners */}
         <Box
           sx={{
             py: 1,
             display: "flex",
             gap: 2,
+            alignItems: "center",
             flexWrap: "wrap",
           }}
         >
@@ -302,7 +302,8 @@ export default function GroupStageStep({
               </Typography>
             )}
         </Box>
-        {/* Match Cards */}
+
+        {/* Match Cards Container */}
         <Box
           sx={{
             display: "flex",
@@ -379,7 +380,7 @@ export default function GroupStageStep({
             pb: 2,
           }}
         >
-          {/* Standing Selections */}
+          {/* Standing Selections Panel */}
           {!isLocked && (
             <Box sx={{ flex: 1 }}>
               <Typography
