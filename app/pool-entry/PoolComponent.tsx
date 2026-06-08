@@ -1,5 +1,6 @@
 "use client";
 
+import CurrencyPoundIcon from "@mui/icons-material/CurrencyPound";
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import PaidIcon from "@mui/icons-material/Paid";
@@ -294,8 +295,8 @@ export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
           variant="body1"
           sx={{ fontWeight: 800, mb: 1, color: "text.secondary" }}
         >
-          Please use the following format on your Venmo, so I know who to add:
-          WCP-(your_email@blank.com)
+          Please use the following format on your payment, so I know who to add:
+          &ldquo;WCP-(your_email@blank.com)&rdquo;
         </Typography>
 
         <Stack
@@ -325,6 +326,24 @@ export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
             }}
           >
             Buy In With Venmo
+          </Button>
+          <Button
+            variant="contained"
+            fullWidth
+            size="large"
+            startIcon={<CurrencyPoundIcon />}
+            href="https://www.paypal.com/paypalme/ChainLightning"
+            target="_blank"
+            color="primary"
+            sx={{
+              py: 1.5,
+              borderRadius: 2,
+              fontSize: "1.1rem",
+              fontWeight: 800,
+              // boxShadow: "0 4px 14px 0 rgba(0,140,255,0.39)",
+            }}
+          >
+            Buy In With Paypal
           </Button>
         </Stack>
 
