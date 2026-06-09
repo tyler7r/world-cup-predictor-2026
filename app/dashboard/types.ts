@@ -48,6 +48,7 @@ export type UserType = {
   points_earned: number;
   entered_pool: boolean;
   show_guide: boolean;
+  additional_support: number;
 };
 
 export type PredictorStatusType = {

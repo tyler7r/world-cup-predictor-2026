@@ -16,7 +16,7 @@ import {
 import { alpha } from "@mui/material/styles";
 
 type PoolEntryProps = {
-  poolEntries: { count: number };
+  poolEntries: { count: number; additional_support: number };
 };
 
 export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
@@ -25,15 +25,21 @@ export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
   // Chain Colors - Used exclusively for accents
   const chainGold = "#FFD700";
 
-  const totalPot = Number(poolEntries.count) * 10;
+  const totalPot =
+    Number(poolEntries.count) * 10 + Number(poolEntries.additional_support);
+
+  const playerPot = Number(poolEntries.count) * 10;
 
   // 50/50 Math
-  const teamFund = (totalPot * 0.5).toFixed(2);
-  const playerPool = (totalPot * 0.5).toFixed(2);
+  const teamFund = (
+    playerPot * 0.5 +
+    Number(poolEntries.additional_support)
+  ).toFixed(2);
+  const playerPool = (playerPot * 0.5).toFixed(2);
 
   // Prize Split (75% / 25% of the player pool)
-  const firstPlacePrize = (totalPot * 0.5 * 0.75).toFixed(2);
-  const secondPlacePrize = (totalPot * 0.5 * 0.25).toFixed(2);
+  const firstPlacePrize = (playerPot * 0.5 * 0.75).toFixed(2);
+  const secondPlacePrize = (playerPot * 0.5 * 0.25).toFixed(2);
 
   return (
     <Box sx={{ maxWidth: 600, mx: "auto", pb: 4, pt: 4, px: 2 }}>
@@ -92,7 +98,11 @@ export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
           variant="caption"
           sx={{ fontWeight: 700, color: "text.secondary", letterSpacing: 1 }}
         >
-          50/50 WORLD CUP FUNDRAISER • $10 USD ENTRY
+          50/50 WORLD CUP FUNDRAISER •{" "}
+          <strong style={{ color: theme.palette.primary.main }}>
+            $10 USD ENTRY
+          </strong>{" "}
+          • ADDITIONAL CONTRIBUTIONS GO 100% TOWARDS THE TEAM POT
         </Typography>
       </Paper>
 
