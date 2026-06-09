@@ -102,7 +102,7 @@ export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
           <strong style={{ color: theme.palette.primary.main }}>
             $10 USD ENTRY
           </strong>{" "}
-          • ADDITIONAL CONTRIBUTIONS GO 100% TOWARDS THE TEAM POT
+          • ADDITIONAL CONTRIBUTIONS GO 100% TOWARDS THE TEAM FUND
         </Typography>
       </Paper>
 
@@ -170,7 +170,7 @@ export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
             variant="caption"
             sx={{ fontWeight: 800, color: chainGold, letterSpacing: 0.5 }}
           >
-            TEAM FUND (50%)
+            TEAM FUND
           </Typography>
         </Paper>
 
@@ -203,7 +203,7 @@ export default function PoolEntryPage({ poolEntries }: PoolEntryProps) {
               letterSpacing: 0.5,
             }}
           >
-            PRIZE POOL (50%)
+            PRIZE POOL
           </Typography>
         </Paper>
       </Stack>
