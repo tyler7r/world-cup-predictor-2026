@@ -146,7 +146,7 @@ export default async function DashboardPage() {
       JOIN teams a ON m.away_team_id = a.id
       LEFT JOIN prediction_group_matches p 
         ON m.api_fixture_id = p.match_id AND p.user_id = ${userId}
-      WHERE m.status = 'Match Finished'
+      WHERE m.status NOT IN ('Match Finished')
       ORDER BY m.kickoff_time DESC
       LIMIT 4
     ` as unknown as Promise<Match[]>,

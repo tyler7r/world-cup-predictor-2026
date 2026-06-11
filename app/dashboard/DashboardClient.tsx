@@ -37,7 +37,7 @@ import {
 import { alpha } from "@mui/material/styles";
 import { nanoid } from "nanoid";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import GroupMatch from "../predictor/components/GroupStageComponents/GroupMatch";
 import { Match } from "../predictor/types";
 import Leaderboard from "./Leaderboard";
@@ -141,39 +141,39 @@ export default function DashboardClient({
   }, [predictorStatus]);
 
   // World Cup 2026 Kickoff Timer (June 11, 2026 @ 3:00 PM EDT)
-  const targetDate = useMemo(
-    () => new Date("2026-06-11T15:00:00-04:00").getTime(),
-    [],
-  );
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+  // const targetDate = useMemo(
+  //   () => new Date("2026-06-11T15:00:00-04:00").getTime(),
+  //   [],
+  // );
+  // const [timeLeft, setTimeLeft] = useState({
+  //   days: 0,
+  //   hours: 0,
+  //   minutes: 0,
+  //   seconds: 0,
+  // });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const now = new Date().getTime();
+  //     const distance = targetDate - now;
 
-      if (distance < 0) {
-        clearInterval(interval);
-        return;
-      }
+  //     if (distance < 0) {
+  //       clearInterval(interval);
+  //       return;
+  //     }
 
-      setTimeLeft({
-        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        hours: Math.floor(
-          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-        ),
-        minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((distance % (1000 * 60)) / 1000),
-      });
-    }, 1000);
+  //     setTimeLeft({
+  //       days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+  //       hours: Math.floor(
+  //         (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+  //       ),
+  //       minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+  //       seconds: Math.floor((distance % (1000 * 60)) / 1000),
+  //     });
+  //   }, 1000);
 
-    return () => clearInterval(interval);
-  }, [targetDate]);
+  //   return () => clearInterval(interval);
+  // }, [targetDate]);
 
   const handlePwdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPwd(e.target.value.toUpperCase());
@@ -293,13 +293,13 @@ export default function DashboardClient({
               color="action"
               sx={{ fontSize: 18, color: "text.secondary" }}
             />
-            <Typography
+            {/* <Typography
               variant="caption"
               sx={{ fontWeight: 800, color: "text.secondary" }}
             >
               LOCKS IN: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m{" "}
               {timeLeft.seconds}s
-            </Typography>
+            </Typography> */}
           </Stack>
         </Box>
 
@@ -421,7 +421,7 @@ export default function DashboardClient({
       {recentMatches.length > 0 && (
         <Box sx={{ display: "flex", width: "100%", flexDirection: "column" }}>
           <Typography variant="h5" sx={{ fontWeight: "bold", mt: 2 }}>
-            Recent Matches
+            Ongoing/Recent Matches
           </Typography>
           <Box
             sx={{
