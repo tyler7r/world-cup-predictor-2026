@@ -335,7 +335,7 @@ export default function GroupMatch({ m }: { m: Match }) {
         >
           {m.venue} /{" "}
           <strong style={{ color: theme.palette.primary.main }}>
-            {m.city}
+            {` ${m.city} `}
           </strong>{" "}
           / {m.stage}
         </Typography>
