@@ -333,7 +333,11 @@ export default function GroupMatch({ m }: { m: Match }) {
             color: "text.secondary",
           }}
         >
-          {m.venue} / {m.city} / {m.stage}
+          {m.venue} /{" "}
+          <strong style={{ color: theme.palette.primary.main }}>
+            {m.city}
+          </strong>{" "}
+          / {m.stage}
         </Typography>
       )}
       <Paper

@@ -231,7 +231,7 @@ export default function DashboardClient({
           },
         }}
       >
-        Fill out your predictor!
+        Review your predictor!
       </Button>
 
       {/* Predictor Status Bar */}
