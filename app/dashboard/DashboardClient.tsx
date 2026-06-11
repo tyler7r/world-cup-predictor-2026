@@ -7,7 +7,6 @@ import {
   EmojiEventsRounded as TrophyIcon,
   VpnKeyRounded as VpnKeyIcon,
 } from "@mui/icons-material";
-import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -274,32 +273,6 @@ export default function DashboardClient({
             >
               Predictor Status: {isComplete ? "Complete" : "Incomplete"}
             </Typography>
-          </Stack>
-
-          <Stack
-            direction="row"
-            spacing={0.5}
-            sx={{
-              bgcolor: "background.paper",
-              px: 1.5,
-              py: 0.5,
-              borderRadius: 2,
-              border: 1,
-              borderColor: "divider",
-              alignItems: "center",
-            }}
-          >
-            <AccessTimeFilledIcon
-              color="action"
-              sx={{ fontSize: 18, color: "text.secondary" }}
-            />
-            {/* <Typography
-              variant="caption"
-              sx={{ fontWeight: 800, color: "text.secondary" }}
-            >
-              LOCKS IN: {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m{" "}
-              {timeLeft.seconds}s
-            </Typography> */}
           </Stack>
         </Box>
 
