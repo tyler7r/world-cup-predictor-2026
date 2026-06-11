@@ -326,14 +326,14 @@ export default function GroupMatch({ m }: { m: Match }) {
             textAlign: "center",
             mt: 2,
             fontWeight: 600,
-            letterSpacing: 0.5,
+            letterSpacing: 0.3,
             width: "100%",
             display: "flex",
             justifyContent: "center",
             color: "text.secondary",
           }}
         >
-          {m.venue} / {m.stage}
+          {m.venue} / {m.city} / {m.stage}
         </Typography>
       )}
       <Paper

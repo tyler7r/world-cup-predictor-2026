@@ -21,6 +21,7 @@ export interface Match {
   venue: string;
   home_code: string;
   away_code: string;
+  city: string;
 }
 
 export interface UserType {
