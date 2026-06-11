@@ -57,7 +57,8 @@ export default async function GroupStageStepContainer() {
       m.away_goals_actual,
       m.home_goals_actual,
       p.points_earned,
-      m.venue
+      m.venue,
+      m.city
     FROM matches m
     JOIN teams h ON m.home_team_id = h.id
     JOIN teams a ON m.away_team_id = a.id
