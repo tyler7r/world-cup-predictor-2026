@@ -121,7 +121,7 @@ export async function GET(request: Request) {
           yellow_cards = EXCLUDED.yellow_cards,
           red_cards = EXCLUDED.red_cards,
           status = EXCLUDED.status,
-          venue = EXCLUDED.venue;
+          venue = EXCLUDED.venue,
           city = EXCLUDED.city;
       `;
       }),
