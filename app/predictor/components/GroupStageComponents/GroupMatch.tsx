@@ -324,13 +324,13 @@ export default function GroupMatch({ m }: { m: Match }) {
           direction={"row"}
           sx={{
             display: "flex",
-            gap: 1,
+            gap: 0.5,
             justifyContent: "center",
             alignItems: "center",
             mt: 2,
           }}
         >
-          <Typography
+          {/* <Typography
             variant="caption"
             sx={{
               textAlign: "center",
@@ -342,16 +342,17 @@ export default function GroupMatch({ m }: { m: Match }) {
             }}
           >
             {m.venue}
-          </Typography>
-          <Divider flexItem orientation="vertical" />
+          </Typography> */}
+          {/* <Divider flexItem orientation="vertical" /> */}
           <Typography
             variant="caption"
-            color="primary"
+            // color="primary"
             sx={{
               textAlign: "center",
               fontWeight: 600,
               letterSpacing: 0.3,
               display: "flex",
+              color: "text.secondary",
               justifyContent: "center",
             }}
           >
