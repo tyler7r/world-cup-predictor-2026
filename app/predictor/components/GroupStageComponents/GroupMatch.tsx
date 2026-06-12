@@ -320,15 +320,22 @@ export default function GroupMatch({ m }: { m: Match }) {
         </Stack>
       </Stack>
       {isGroupStageGame && (
-        <Stack direction={"row"} sx={{ display: "flex", gap: 0.5 }}>
+        <Stack
+          direction={"row"}
+          sx={{
+            display: "flex",
+            gap: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            mt: 2,
+          }}
+        >
           <Typography
             variant="caption"
             sx={{
               textAlign: "center",
-              mt: 2,
               fontWeight: 600,
               letterSpacing: 0.3,
-              width: "100%",
               display: "flex",
               justifyContent: "center",
               color: "text.secondary",
@@ -336,31 +343,31 @@ export default function GroupMatch({ m }: { m: Match }) {
           >
             {m.venue}
           </Typography>
-          <Divider flexItem orientation="vertical" variant="middle" />
+          <Divider flexItem orientation="vertical" />
           <Typography
             variant="caption"
             color="primary"
             sx={{
               textAlign: "center",
-              mt: 2,
               fontWeight: 600,
               letterSpacing: 0.3,
-              width: "100%",
               display: "flex",
               justifyContent: "center",
             }}
           >
-            {m.city}
+            {m.city.includes("San Fran")
+              ? "San Francisco"
+              : m.city.includes("New York")
+                ? "New York"
+                : m.city}
           </Typography>
-          <Divider flexItem orientation="vertical" variant="middle" />
+          <Divider flexItem orientation="vertical" />
           <Typography
             variant="caption"
             sx={{
               textAlign: "center",
-              mt: 2,
               fontWeight: 600,
               letterSpacing: 0.3,
-              width: "100%",
               display: "flex",
               justifyContent: "center",
               color: "text.secondary",
