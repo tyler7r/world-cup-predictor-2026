@@ -48,7 +48,7 @@ export default async function GroupStageStepContainer({
         h.name as home_name, a.name as away_name, h.rank as home_rank, a.rank as away_rank,
         p.home_goals_predicted, p.away_goals_predicted, h.flag_url as home_flag, a.flag_url as away_flag,
         h.name_code as home_code, a.name_code as away_code, m.kickoff_time as kickoff_time,
-        m.away_goals_actual, m.home_goals_actual, p.points_earned, m.venue
+        m.away_goals_actual, m.home_goals_actual, p.points_earned, m.venue, m.city
       FROM matches m
       JOIN teams h ON m.home_team_id = h.id
       JOIN teams a ON m.away_team_id = a.id

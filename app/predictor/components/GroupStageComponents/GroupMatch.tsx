@@ -320,25 +320,55 @@ export default function GroupMatch({ m }: { m: Match }) {
         </Stack>
       </Stack>
       {isGroupStageGame && (
-        <Typography
-          variant="caption"
-          sx={{
-            textAlign: "center",
-            mt: 2,
-            fontWeight: 600,
-            letterSpacing: 0.3,
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            color: "text.secondary",
-          }}
-        >
-          {m.venue} /{" "}
-          <strong style={{ color: theme.palette.primary.main }}>
-            {` ${m.city} `}
-          </strong>{" "}
-          / {m.stage}
-        </Typography>
+        <Stack direction={"row"} sx={{ display: "flex", gap: 0.5 }}>
+          <Typography
+            variant="caption"
+            sx={{
+              textAlign: "center",
+              mt: 2,
+              fontWeight: 600,
+              letterSpacing: 0.3,
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              color: "text.secondary",
+            }}
+          >
+            {m.venue}
+          </Typography>
+          <Divider flexItem orientation="vertical" variant="middle" />
+          <Typography
+            variant="caption"
+            color="primary"
+            sx={{
+              textAlign: "center",
+              mt: 2,
+              fontWeight: 600,
+              letterSpacing: 0.3,
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            {m.city}
+          </Typography>
+          <Divider flexItem orientation="vertical" variant="middle" />
+          <Typography
+            variant="caption"
+            sx={{
+              textAlign: "center",
+              mt: 2,
+              fontWeight: 600,
+              letterSpacing: 0.3,
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              color: "text.secondary",
+            }}
+          >
+            {m.stage}
+          </Typography>
+        </Stack>
       )}
       <Paper
         sx={{
