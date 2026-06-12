@@ -320,24 +320,52 @@ export default function GroupMatch({ m }: { m: Match }) {
         </Stack>
       </Stack>
       {isGroupStageGame && (
-        <Typography
-          variant="caption"
+        <Stack
+          direction={"row"}
           sx={{
-            textAlign: "center",
-            fontWeight: 600,
-            letterSpacing: 0.3,
             display: "flex",
-            color: "text.secondary",
+            gap: 1,
             justifyContent: "center",
+            alignItems: "center",
+            mt: 2,
           }}
         >
-          {m.city.includes("San Fran")
-            ? "San Francisco"
-            : m.city.includes("New York")
-              ? "New York"
-              : m.city}
-          / {m.stage}
-        </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              textAlign: "center",
+              fontWeight: 600,
+              letterSpacing: 0.3,
+              display: "flex",
+              color: "text.secondary",
+              justifyContent: "center",
+            }}
+          >
+            {m.city.includes("San Fran")
+              ? "San Francisco"
+              : m.city.includes("New York")
+                ? "New York"
+                : m.city}
+          </Typography>
+          <Divider
+            flexItem
+            orientation="vertical"
+            sx={{ color: "text.secondary" }}
+          />
+          <Typography
+            variant="caption"
+            sx={{
+              textAlign: "center",
+              fontWeight: 600,
+              letterSpacing: 0.3,
+              display: "flex",
+              justifyContent: "center",
+              color: "text.secondary",
+            }}
+          >
+            {m.stage}
+          </Typography>
+        </Stack>
       )}
       <Paper
         sx={{
