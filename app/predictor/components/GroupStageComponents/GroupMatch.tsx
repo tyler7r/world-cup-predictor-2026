@@ -320,63 +320,24 @@ export default function GroupMatch({ m }: { m: Match }) {
         </Stack>
       </Stack>
       {isGroupStageGame && (
-        <Stack
-          direction={"row"}
+        <Typography
+          variant="caption"
           sx={{
+            textAlign: "center",
+            fontWeight: 600,
+            letterSpacing: 0.3,
             display: "flex",
-            gap: 0.5,
+            color: "text.secondary",
             justifyContent: "center",
-            alignItems: "center",
-            mt: 2,
           }}
         >
-          {/* <Typography
-            variant="caption"
-            sx={{
-              textAlign: "center",
-              fontWeight: 600,
-              letterSpacing: 0.3,
-              display: "flex",
-              justifyContent: "center",
-              color: "text.secondary",
-            }}
-          >
-            {m.venue}
-          </Typography> */}
-          {/* <Divider flexItem orientation="vertical" /> */}
-          <Typography
-            variant="caption"
-            // color="primary"
-            sx={{
-              textAlign: "center",
-              fontWeight: 600,
-              letterSpacing: 0.3,
-              display: "flex",
-              color: "text.secondary",
-              justifyContent: "center",
-            }}
-          >
-            {m.city.includes("San Fran")
-              ? "San Francisco"
-              : m.city.includes("New York")
-                ? "New York"
-                : m.city}
-          </Typography>
-          <Divider flexItem orientation="vertical" />
-          <Typography
-            variant="caption"
-            sx={{
-              textAlign: "center",
-              fontWeight: 600,
-              letterSpacing: 0.3,
-              display: "flex",
-              justifyContent: "center",
-              color: "text.secondary",
-            }}
-          >
-            {m.stage}
-          </Typography>
-        </Stack>
+          {m.city.includes("San Fran")
+            ? "San Francisco"
+            : m.city.includes("New York")
+              ? "New York"
+              : m.city}
+          / {m.stage}
+        </Typography>
       )}
       <Paper
         sx={{
