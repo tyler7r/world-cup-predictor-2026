@@ -2,7 +2,7 @@ name: Sync World Cup Data
 on:
   schedule:
     # This runs every 4 hours
-    - cron: "*/30 * * * *"
+    - cron: "11,41 * * * *"
   workflow_dispatch: # Allows you to run it manually from GitHub for testing
 
 jobs:
