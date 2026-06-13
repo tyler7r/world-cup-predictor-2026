@@ -380,7 +380,7 @@ export default function GroupMatch({ m }: { m: Match }) {
           bgcolor:
             isFinished && m.points_earned && m.points_earned > 1
               ? theme.palette.success.light
-              : isFinished && m.points_earned && m.points_earned == 0
+              : isFinished && m.points_earned && m.points_earned < 1
                 ? theme.palette.error.light
                 : isFinished && m.points_earned && m.points_earned == 1
                   ? theme.palette.warning.dark
