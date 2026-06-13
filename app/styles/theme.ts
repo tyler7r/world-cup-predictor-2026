@@ -10,10 +10,13 @@ export const theme = createTheme({
     },
     warning: {
       main: "rgb(255, 215, 0)",
+      light: "rgb(255, 215, 0, 0.85)",
+      dark: "rgb(255, 215, 0, 0.7)",
     },
     success: {
       main: "rgba(102, 187, 106, 1)",
       light: "rgba(102, 187, 106, 0.5)", // Toned-down, pleasant green
+      dark: "rgba(102, 187, 106, 0.7)",
     },
     error: {
       main: "rgba(239, 83, 80, 1)",

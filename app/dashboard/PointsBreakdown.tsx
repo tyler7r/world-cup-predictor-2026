@@ -180,7 +180,7 @@ export default function PointsBreakdown({
           color="text.disabled"
           sx={{ fontWeight: 700, color: "text.secondary", letterSpacing: 1 }}
         >
-          POINTS LAST UPDATED
+          LAST UPDATED
         </Typography>
         <Typography variant="body2" color="primary" sx={{ fontWeight: "bold" }}>
           {formatLastUpdatedTime(lastUpdated.matches)}

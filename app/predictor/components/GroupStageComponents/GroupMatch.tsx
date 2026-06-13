@@ -45,7 +45,10 @@ export default function GroupMatch({ m }: { m: Match }) {
     >
       <Paper
         sx={{
-          bgcolor: theme.palette.primary.main,
+          bgcolor:
+            m.status !== "Not Started" && m.status !== "Match Finished"
+              ? theme.palette.grey[100]
+              : theme.palette.primary.main,
           width: "100%",
           borderBottomLeftRadius: 2,
           borderBottomRightRadius: 2,
@@ -58,9 +61,14 @@ export default function GroupMatch({ m }: { m: Match }) {
       >
         <Typography
           variant="caption"
+          color={
+            m.status !== "Not Started" && m.status !== "Match Finished"
+              ? "primary"
+              : "textPrimary"
+          }
           sx={{
             textAlign: "center",
-            fontWeight: 600,
+            fontWeight: "bold",
             letterSpacing: 0.5,
             width: "100%",
             display: "flex",
@@ -374,7 +382,9 @@ export default function GroupMatch({ m }: { m: Match }) {
               ? theme.palette.success.light
               : isFinished && m.points_earned && m.points_earned == 0
                 ? theme.palette.error.light
-                : theme.palette.divider,
+                : isFinished && m.points_earned && m.points_earned == 1
+                  ? theme.palette.warning.dark
+                  : theme.palette.divider,
           width: "100%",
           borderTopLeftRadius: 2,
           borderTopRightRadius: 2,

@@ -114,7 +114,7 @@ export default async function DashboardPage() {
       JOIN teams a ON m.away_team_id = a.id
       LEFT JOIN prediction_group_matches p 
         ON m.api_fixture_id = p.match_id AND p.user_id = ${userId}
-      WHERE m.kickoff_time > ${d.toISOString()}
+      WHERE m.kickoff_time > ${d.toISOString()} OR m.status = 'Not Started'
       ORDER BY m.kickoff_time ASC
       LIMIT 4
     ` as unknown as Promise<Match[]>,
