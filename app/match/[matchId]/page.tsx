@@ -74,7 +74,8 @@ export default async function MatchPredictionsPage({ params }: PredictorProps) {
       LEFT JOIN prediction_group_matches p 
         ON m.api_fixture_id = p.match_id AND m.api_fixture_id = ${matchId}
       JOIN leaderboard l ON p.user_id = l.user_id
-      WHERE m.api_fixture_id = ${matchId}
+      JOIN users u ON p.user_id = u.id
+      WHERE m.api_fixture_id = ${matchId} AND u.predicted_total_goals is not null
       ORDER BY l.total_points DESC
     ` as unknown as Promise<Match[]>,
   ]);
