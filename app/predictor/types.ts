@@ -22,6 +22,9 @@ export interface Match {
   home_code: string;
   away_code: string;
   city: string;
+  display_name?: string;
+  total_points?: string;
+  user_id?: string;
 }
 
 export interface UserType {
