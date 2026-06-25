@@ -157,6 +157,8 @@ export default function LockedKnockoutStep({
       actualTeamsByStage[targetStage as keyof typeof actualTeamsByStage] || [];
     const expectedSize = STAGE_SIZES[targetStage] || 0;
 
+    const isInNextRound = actualTeams.includes(teamId);
+
     // A. CASE: The stage has been completely filled/concluded in reality
     if (actualTeams.length === expectedSize) {
       return actualTeams.includes(teamId) ? "correct" : "incorrect";
@@ -189,6 +191,8 @@ export default function LockedKnockoutStep({
         .map((m) => m.winner_team_id);
       if (sfWinners.includes(teamId)) return "incorrect";
     }
+
+    if (isInNextRound) return "correct";
 
     return "pending";
   };
