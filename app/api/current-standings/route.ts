@@ -45,7 +45,9 @@ export async function GET(request: Request) {
     const data = response.data as APIFootballResponse;
 
     // Now 'data' is fully typed
-    const allGroups = data.response[0].league.standings;
+    const allGroups = data.response[0].league.standings.filter(
+      (g) => !g[0].group.includes("Group Stage"),
+    );
 
     for (const groupTeams of allGroups) {
       const groupName = groupTeams[0].group;
